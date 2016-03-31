@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang=en>
+<head>
+<meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=Edge">
+<title>Upload Demo</title>
+</head>
+
+<body>
+<div>
+    <input type="file" id="files" />
+</div>
+<pre id="content"></pre>
+
+<script type="text/javascript">
+function handleFileSel(evt) {
+    let files = document.getElementById('files').files;
+    let reader = new FileReader();
+    let file = files[0];
+    //let blob = file.slice(0, file.size);
+    reader.readAsBinaryString(file);
+    reader.onloadend = (evt) => {
+        if(evt.target.readyState === FileReader.DONE) {
+            document.getElementById('content').textContent = evt.target.result;
+        }
+        let xhr = new XMLHttpRequest();
+        let fd = new FormData();
+        xhr.open('POST', '/upload', true);
+        fd.append('upload_file', evt.target.result);
+        xhr.send(fd);
+    }
+}
+document.getElementById('files').addEventListener('change', handleFileSel, false);
+</script>
+
+</body>
+</html>
