@@ -11,14 +11,6 @@ SOCK_TRANSFER_BLOCK = 4096
 LEN_PACK_OPT = ("q", 8)
 
 
-class FileExistError(Exception):
-    def __init__(self, file_name):
-        self.file_name = file_name
-        
-    def __str__(self):
-        return "File {0} has already existed".format(self.file_name)
-
-
 def get_progress_bar(current, total, prefix='', suffix='', bar_len=100):
     """
     返回字符串，是进度条，定长
@@ -88,7 +80,6 @@ class Daemon(object):
 
     def request_handler(self, sock):
         while True:
-            #pdb.set_trace()
             request = get_json_from_socket(sock)
             print(request)
             try:
@@ -100,26 +91,22 @@ class Daemon(object):
                     break
                 elif request["method"] == "upload":
                     self.retrieve_file(request, sock)
+                elif request["method"] == "download":
+                    self.transfer_file(request, sock)
             except KeyError as err:
                 print("KeyError: {0}".format(err), file=sys.stderr)
                 sock.close()
             except struct.error as err:
-                print("cache an struct.error {0}".format(err))
+                print("catch an struct.error {0}".format(err))
                 sock.close()
-            except FileExistError as err:
-                print(err, file=sys.stderr)
             else:
                 print("successfully deal with an request")
 
     def retrieve_file(self, request, sock):
         """
-        if not "name" in request:
-            raise KeyError("name not exist in request")
-        if not "size" in request:
-            raise KeyError("size not exist in request")
-        """
-        """
-        如果文件已存在则抛出异常
+        处理客户端上传文件请求
+        request     Required:客户端发过来的请求(dict)
+        sock        Required:和客户端已建立的socket(socket.socket)
         """
         path = self.workdir + request["name"]
         file_size = request["size"]
@@ -142,14 +129,31 @@ class Daemon(object):
                                      file_size,
                                      "retrieving {0}".format(request["name"]),
                                      "",
-                                     100
+                                     60
                                      )
                 )
+            sys.stdout.write("\n")
             respond = {
                 "method": "respond",
                 "result": "OK"
             }
             put_json_to_socket(respond, sock)
+
+    def transfer_file(self, request, sock):
+        """
+        处理客户端下载文件的请求
+        request, sock同上
+        """
+        path = self.workdir + request["name"]
+        if not os.path.isfile(path):
+            respond = dict(method="respond", result="file not exist")
+            put_json_to_socket(respond, sock)
+        else:
+            file_size = os.path.getsize(path)
+            respond = dict(method="respond", result="accepted", size=file_size)
+            put_json_to_socket(respond, sock)
+            with open(path, "rb") as file_to_send:
+                sock.send(file_to_send.read())
 
 
 class Client(object):
@@ -167,7 +171,7 @@ class Client(object):
 
     def upload_file(self, file_path):
         """
-        file_path       Required:要上传的文件路径
+        file_path       Required:要上传的文件路径(str)
         """
         try:
             file_size = os.path.getsize(file_path)
@@ -177,7 +181,7 @@ class Client(object):
             respond = get_json_from_socket(self.sock)
             if respond["result"] == "accepted":
                 with open(file_path, "rb") as file_to_send:
-                    self.sock.sendfile(file_to_send)
+                    self.sock.send(file_to_send.read())
                 respond = get_json_from_socket(self.sock)
                 if respond["result"] == "OK":
                     print("successfully upload {0}".format(file_path))
@@ -189,6 +193,34 @@ class Client(object):
             print(err, file=sys.stderr)
         except KeyError as err:
             print("Invalid respond: {0}".format(err), file=sys.stderr)
+
+    def download_file(self, file_name):
+        """
+        file_name       Required:要下载的文件名(str)
+        """
+        if os.path.isfile(file_name):
+            print("{0} existed, not override".format(file_name))
+        else:
+            request = dict(method="download", name=file_name)
+            put_json_to_socket(request, self.sock)
+            respond = get_json_from_socket(self.sock)
+            if respond["result"] == "accepted":
+                file_size = respond["size"]
+                total_recv = 0
+                with open(file_name, "wb") as save_file:
+                    while total_recv < file_size:
+                        data = self.sock.recv(SOCK_TRANSFER_BLOCK)
+                        total_recv += len(data)
+                        save_file.write(data)
+                        sys.stdout.write(
+                            get_progress_bar(total_recv,
+                                             file_size,
+                                             "retrieving {0}".format(file_name),
+                                             "",
+                                             60
+                                             )
+                        )
+                    sys.stdout.write("\n")
 
     def finish(self):
         request = dict(method="exit")
