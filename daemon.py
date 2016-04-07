@@ -120,6 +120,7 @@ class Daemon(object):
             data = sock.recv(SOCK_TRANSFER_BLOCK)
             total_recv = len(data)
             save_file.write(data)
+
             while total_recv < file_size:
                 data = sock.recv(SOCK_TRANSFER_BLOCK)
                 total_recv += len(data)
@@ -152,8 +153,12 @@ class Daemon(object):
             file_size = os.path.getsize(path)
             respond = dict(method="respond", result="accepted", size=file_size)
             put_json_to_socket(respond, sock)
+            total_send = 0
             with open(path, "rb") as file_to_send:
-                sock.send(file_to_send.read())
+                while total_send < file_size:
+                    data = file_to_send.read(SOCK_TRANSFER_BLOCK)
+                    sock.send(data)
+                    total_send += len(data)
 
 
 class Client(object):
@@ -180,8 +185,12 @@ class Client(object):
             put_json_to_socket(request, self.sock)
             respond = get_json_from_socket(self.sock)
             if respond["result"] == "accepted":
+                total_send = 0
                 with open(file_path, "rb") as file_to_send:
-                    self.sock.send(file_to_send.read())
+                    while total_send < file_size:
+                        data = file_to_send.read(SOCK_TRANSFER_BLOCK)
+                        self.sock.send(data)
+                        total_send += len(data)
                 respond = get_json_from_socket(self.sock)
                 if respond["result"] == "OK":
                     print("successfully upload {0}".format(file_path))
