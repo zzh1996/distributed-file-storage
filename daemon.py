@@ -11,7 +11,7 @@ SOCK_TRANSFER_BLOCK = 4096
 LEN_PACK_OPT = ("q", 8)
 
 
-def get_progress_bar(current, total, prefix='', suffix='', bar_len=100):
+def get_progress_bar(current, total, prefix='', suffix='', bar_len=60):
     """
     返回字符串，是进度条，定长
     百分比显示的总宽度,默认是6即精确到小数点后2位(int)
@@ -79,10 +79,10 @@ class Daemon(object):
         s.close()
 
     def request_handler(self, sock):
-        while True:
-            request = get_json_from_socket(sock)
-            print(request)
-            try:
+        try:
+            while True:
+                request = get_json_from_socket(sock)
+                print(request)
                 if "method" not in request:
                     raise KeyError("method not exist in request")
                 if request["method"] == "exit":
@@ -93,14 +93,17 @@ class Daemon(object):
                     self.retrieve_file(request, sock)
                 elif request["method"] == "download":
                     self.transfer_file(request, sock)
-            except KeyError as err:
-                print("KeyError: {0}".format(err), file=sys.stderr)
-                sock.close()
-            except struct.error as err:
-                print("catch an struct.error {0}".format(err))
-                sock.close()
-            else:
-                print("successfully deal with an request")
+        except KeyError as err:
+            print("KeyError: {0}".format(err), file=sys.stderr)
+            sock.close()
+        except RuntimeError as err:
+            print("RuntimeError {0}".format(err))
+            sock.close()
+        except struct.error as err:
+            print("catch an struct.error {0}".format(err))
+            sock.close()
+        else:
+            print("successfully deal with an request")
 
     def retrieve_file(self, request, sock):
         """
@@ -109,36 +112,35 @@ class Daemon(object):
         sock        Required:和客户端已建立的socket(socket.socket)
         """
         path = self.workdir + request["name"]
-        file_size = request["size"]
         if os.path.isfile(path):
             respond = dict(method="respond", result="file existed")
             put_json_to_socket(respond, sock)
         else:
             respond = dict(method="respond", result="accepted")
             put_json_to_socket(respond, sock)
-            save_file = open(path, "wb")
-            data = sock.recv(SOCK_TRANSFER_BLOCK)
-            total_recv = len(data)
-            save_file.write(data)
-
-            while total_recv < file_size:
-                data = sock.recv(SOCK_TRANSFER_BLOCK)
-                total_recv += len(data)
-                save_file.write(data)
-                sys.stdout.write(
-                    get_progress_bar(total_recv,
-                                     file_size,
-                                     "retrieving {0}".format(request["name"]),
-                                     "",
-                                     60
-                                     )
-                )
-            sys.stdout.write("\n")
-            respond = {
-                "method": "respond",
-                "result": "OK"
-            }
-            put_json_to_socket(respond, sock)
+            with open(path, "wb") as save_file:
+                file_size = request["size"]
+                total_recv = 0
+                while total_recv < file_size:
+                    data = sock.recv(SOCK_TRANSFER_BLOCK)
+                    data_len = len(data)
+                    if data_len == 0:
+                        sys.stdout.write("\n")
+                        raise RuntimeError("can't receive more data")
+                    total_recv += data_len
+                    save_file.write(data)
+                    sys.stdout.write(
+                        get_progress_bar(total_recv,
+                                         file_size,
+                                         "retrieving {0}".format(request["name"]),
+                                         "",
+                                         60
+                                         )
+                    )
+                else:
+                    sys.stdout.write("\n")
+                    respond = dict(method="respond",result="OK")
+                    put_json_to_socket(respond, sock)
 
     def transfer_file(self, request, sock):
         """
@@ -214,12 +216,16 @@ class Client(object):
             put_json_to_socket(request, self.sock)
             respond = get_json_from_socket(self.sock)
             if respond["result"] == "accepted":
-                file_size = respond["size"]
-                total_recv = 0
                 with open(file_name, "wb") as save_file:
+                    file_size = respond["size"]
+                    total_recv = 0
                     while total_recv < file_size:
                         data = self.sock.recv(SOCK_TRANSFER_BLOCK)
-                        total_recv += len(data)
+                        data_len = len(data)
+                        if data_len == 0:
+                            sys.stdout.write("\n")
+                            raise RuntimeError("can't receive more data")
+                        total_recv += data_len
                         save_file.write(data)
                         sys.stdout.write(
                             get_progress_bar(total_recv,
