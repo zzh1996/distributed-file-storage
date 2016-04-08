@@ -4,28 +4,34 @@ import socket
 import struct
 import os
 import threading
-import pdb
+import time
 
 OVERWRITE = False
 SOCK_TRANSFER_BLOCK = 4096
 LEN_PACK_OPT = ("q", 8)
 
 
-def get_progress_bar(current, total, prefix='', suffix='', bar_len=60):
+def update_progress_bar(progress, interval=0.5, prefix='', suffix='', bar_len=60):
     """
     返回字符串，是进度条，定长
     百分比显示的总宽度,默认是6即精确到小数点后2位(int)
-    current     Required:表示当前进度(int or float)
-    total       Required:表示总(int or float)
+    progress    Required:是一个列表，存放了进度信息，格式为[current, total]
+        current 表示当前进度(int or float)
+        total   表示总(int or float)
+    interval    Required:多长时间更新一次进度条
     prefix      Option:显示在进度条前方(str)
     suffix      Option:显示在进度条后面(str)
     barlen      Option:进度条长度(int)
 
     """
-    percents = 100.0*(float(current)/total)
-    filled_len = int(round(bar_len*percents/100.0))
-    bar = "#" * filled_len + "-" * (bar_len - filled_len)
-    return "{0} [{1}] {2:6.2f}% {3}\r".format(prefix, bar, percents, suffix)
+    while progress[0] < progress[1]:
+        percents = 100.0*(float(progress[0])/progress[1])
+        filled_len = int(round(bar_len*percents/100.0))
+        bar = "#" * filled_len + "-" * (bar_len - filled_len)
+        sys.stdout.write("{0} [{1}] {2:6.2f}% {3}\r".format(prefix, bar, percents, suffix))
+        time.sleep(interval)
+    bar = "#" * bar_len
+    sys.stdout.write("{0} [{1}] {2:6.2f}% {3}\n".format(prefix, bar, 100.0, suffix))
 
 
 def get_json_from_socket(sock):
@@ -61,26 +67,31 @@ class Daemon(object):
         else:
             raise RuntimeError("specified workdir does not exist")
 
+        self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+
     def run(self, host='', port=6788):
         """
         host        Optional:监听的地址(str)
         port        Optional:监听的端口(int)
         """
-        s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-        s.bind((host, port))
-        s.listen()
+        self.sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+        self.sock.bind((host, port))
+        self.sock.listen()
         print("Server Started")
-        while True:
-            c, addr = s.accept()
-            print("client({0[0]}:{0[1]}) connected".format(addr))
-            t = threading.Thread(target=self.request_handler, name="client{0[0]}".format(addr), args=(c,))
-            t.start()
-        s.close()
-
-    def request_handler(self, sock):
         try:
             while True:
+                c, addr = self.sock.accept()
+                print("client({0[0]}:{0[1]}) connected".format(addr))
+                t = threading.Thread(target=self.request_handler, name="client{0[0]}".format(addr), args=(c,))
+                t.start()
+        except KeyboardInterrupt:
+            print("server shutdown")
+            self.sock.close()
+
+    def request_handler(self, sock):
+        request_exit = False
+        while not request_exit:
+            try:
                 request = get_json_from_socket(sock)
                 print(request)
                 if "method" not in request:
@@ -88,22 +99,25 @@ class Daemon(object):
                 if request["method"] == "exit":
                     print("client({0[0]}:{0[1]}) exited".format(sock.getpeername()))
                     sock.close()
-                    break
+                    request_exit = True
                 elif request["method"] == "upload":
                     self.retrieve_file(request, sock)
                 elif request["method"] == "download":
                     self.transfer_file(request, sock)
-        except KeyError as err:
-            print("KeyError: {0}".format(err), file=sys.stderr)
-            sock.close()
-        except RuntimeError as err:
-            print("RuntimeError {0}".format(err))
-            sock.close()
-        except struct.error as err:
-            print("catch an struct.error {0}".format(err))
-            sock.close()
-        else:
-            print("successfully deal with an request")
+            except KeyError as err:
+                print("KeyError: {0}".format(err), file=sys.stderr)
+                sock.close()
+                request_exit = True
+            except RuntimeError as err:
+                print("RuntimeError {0}".format(err))
+                sock.close()
+                request_exit = True
+            except struct.error as err:
+                print("catch an struct.error {0}".format(err))
+                sock.close()
+                request_exit = True
+            else:
+                print("successfully deal with an request")
 
     def retrieve_file(self, request, sock):
         """
@@ -119,30 +133,31 @@ class Daemon(object):
             respond = dict(method="respond", result="accepted")
             put_json_to_socket(respond, sock)
             with open(path, "wb") as save_file:
-                file_size = request["size"]
-                total_recv = 0
-                pre_recv = total_recv
-                while total_recv < file_size:
+                progress = [0, request["size"]]
+                """
+                progress[0]表示下载了多少
+                progress[1]表示文件一共多大
+                """
+                thread_progress_bar = threading.Thread(
+                    target=update_progress_bar,
+                    args=(progress, 0.5, "retrieving {0}".format(request["name"]))
+                )
+                thread_progress_bar.start()
+                while progress[0] < progress[1]:
                     data = sock.recv(SOCK_TRANSFER_BLOCK)
                     data_len = len(data)
                     if data_len == 0:
-                        sys.stdout.write("\n")
+                        progress[0] = progress[1]
+                        thread_progress_bar.join()
+                        """
+                        为了结束另一个Thread
+                        """
                         raise RuntimeError("can't receive more data")
-                    total_recv += data_len
+                    progress[0] += data_len
                     save_file.write(data)
-                    if ( float(total_recv - pre_recv)/file_size > 0.0002 ):
-                        pre_recv = total_recv
-                        sys.stdout.write(
-                            get_progress_bar(total_recv,
-                                             file_size,
-                                             "retrieving {0}".format(request["name"]),
-                                             "",
-                                             60
-                                             )
-                        )
                 else:
-                    sys.stdout.write("\n")
-                    respond = dict(method="respond",result="OK")
+                    thread_progress_bar.join()
+                    respond = dict(method="respond", result="OK")
                     put_json_to_socket(respond, sock)
 
     def transfer_file(self, request, sock):
@@ -190,13 +205,19 @@ class Client(object):
             put_json_to_socket(request, self.sock)
             respond = get_json_from_socket(self.sock)
             if respond["result"] == "accepted":
-                total_send = 0
+                progress = [0, file_size]
+                thread_progress_bar = threading.Thread(
+                    target=update_progress_bar,
+                    args=(progress, 0.5, "uploading {0}".format(file_name))
+                )
+                thread_progress_bar.start()
                 with open(file_path, "rb") as file_to_send:
-                    while total_send < file_size:
+                    while progress[0] < progress[1]:
                         data = file_to_send.read(SOCK_TRANSFER_BLOCK)
                         self.sock.send(data)
-                        total_send += len(data)
+                        progress[0] += len(data)
                 respond = get_json_from_socket(self.sock)
+                thread_progress_bar.join()
                 if respond["result"] == "OK":
                     print("successfully upload {0}".format(file_path))
                 else:
@@ -220,28 +241,22 @@ class Client(object):
             respond = get_json_from_socket(self.sock)
             if respond["result"] == "accepted":
                 with open(file_name, "wb") as save_file:
-                    file_size = respond["size"]
-                    total_recv = 0
-                    pre_recv = total_recv
-                    while total_recv < file_size:
+                    progress = [0, respond["size"]]
+                    thread_progress_bar = threading.Thread(
+                        target=update_progress_bar,
+                        args=(progress, 0.5, "downloading {0}".format(file_name))
+                    )
+                    thread_progress_bar.start()
+                    while progress[0] < progress[1]:
                         data = self.sock.recv(SOCK_TRANSFER_BLOCK)
                         data_len = len(data)
                         if data_len == 0:
-                            sys.stdout.write("\n")
+                            progress[0] = progress[1]
+                            thread_progress_bar.join()
                             raise RuntimeError("can't receive more data")
-                        total_recv += data_len
+                        progress[0] += data_len
                         save_file.write(data)
-                        if ( float(total_recv-pre_recv)/file_size > 0.0002 ):
-                            pre_recv = total_recv
-                            sys.stdout.write(
-                                get_progress_bar(total_recv,
-                                                 file_size,
-                                                 "retrieving {0}".format(file_name),
-                                                 "",
-                                                 60
-                                                 )
-                            )
-                    sys.stdout.write("\n")
+                    thread_progress_bar.join()
 
     def finish(self):
         request = dict(method="exit")
