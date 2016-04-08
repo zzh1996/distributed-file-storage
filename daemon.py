@@ -121,6 +121,7 @@ class Daemon(object):
             with open(path, "wb") as save_file:
                 file_size = request["size"]
                 total_recv = 0
+                pre_recv = total_recv
                 while total_recv < file_size:
                     data = sock.recv(SOCK_TRANSFER_BLOCK)
                     data_len = len(data)
@@ -129,14 +130,16 @@ class Daemon(object):
                         raise RuntimeError("can't receive more data")
                     total_recv += data_len
                     save_file.write(data)
-                    sys.stdout.write(
-                        get_progress_bar(total_recv,
-                                         file_size,
-                                         "retrieving {0}".format(request["name"]),
-                                         "",
-                                         60
-                                         )
-                    )
+                    if ( float(total_recv - pre_recv)/file_size > 0.0002 ):
+                        pre_recv = total_recv
+                        sys.stdout.write(
+                            get_progress_bar(total_recv,
+                                             file_size,
+                                             "retrieving {0}".format(request["name"]),
+                                             "",
+                                             60
+                                             )
+                        )
                 else:
                     sys.stdout.write("\n")
                     respond = dict(method="respond",result="OK")
@@ -219,6 +222,7 @@ class Client(object):
                 with open(file_name, "wb") as save_file:
                     file_size = respond["size"]
                     total_recv = 0
+                    pre_recv = total_recv
                     while total_recv < file_size:
                         data = self.sock.recv(SOCK_TRANSFER_BLOCK)
                         data_len = len(data)
@@ -227,14 +231,16 @@ class Client(object):
                             raise RuntimeError("can't receive more data")
                         total_recv += data_len
                         save_file.write(data)
-                        sys.stdout.write(
-                            get_progress_bar(total_recv,
-                                             file_size,
-                                             "retrieving {0}".format(file_name),
-                                             "",
-                                             60
-                                             )
-                        )
+                        if ( float(total_recv-pre_recv)/file_size > 0.0002 ):
+                            pre_recv = total_recv
+                            sys.stdout.write(
+                                get_progress_bar(total_recv,
+                                                 file_size,
+                                                 "retrieving {0}".format(file_name),
+                                                 "",
+                                                 60
+                                                 )
+                            )
                     sys.stdout.write("\n")
 
     def finish(self):
