@@ -1,37 +1,77 @@
 <!DOCTYPE html>
 <html lang=en>
 <head>
-<meta charset="UTF-8">
-<meta http-equiv="X-UA-Compatible" content="IE=Edge">
-<title>Upload Demo</title>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <link href="{{ static_url("css/bootstrap.min.css") }}" rel="stylesheet">
+    <link href="{{ static_url("css/bootstrap-theme.min.css") }}" rel="stylesheet">
+    <link href="{{ static_url("css/font-awesome.min.css") }}" rel="stylesheet">
+    <title>Upload Demo</title>
 </head>
 
 <body>
-<div>
-    <input type="file" id="files" />
-</div>
-<pre id="content"></pre>
+    <nav class="navbar navbar-inverse" role="navigation">
+        <div class="container">
+            <div id="navbar" class="navbar-collapse collapse">
+                <ul class="nav navbar-nav">
+                    <li class="active">
+                        <a href="#">
+                            <span class="glyphicon glyphicon-home" aria-hidden="true"></span>
+                            FileServer
+                        </a>
+                    </li>
+                </ul>
+        </div>
+    </nav>
 
-<script type="text/javascript">
-function handleFileSel(evt) {
-    let files = document.getElementById('files').files;
-    let reader = new FileReader();
-    let file = files[0];
-    //let blob = file.slice(0, file.size);
-    reader.readAsBinaryString(file);
-    reader.onloadend = (evt) => {
-        if(evt.target.readyState === FileReader.DONE) {
-            document.getElementById('content').textContent = evt.target.result;
-        }
-        let xhr = new XMLHttpRequest();
-        let fd = new FormData();
-        xhr.open('POST', '/upload', true);
-        fd.append('upload_file', evt.target.result);
-        xhr.send(fd);
-    }
-}
-document.getElementById('files').addEventListener('change', handleFileSel, false);
-</script>
+    <div class="container">
+        <div id="notification" style="display: none;" class="alert alert-dismissible alert-info" role="alert">
+        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+        </button>
+            New Client
+        </div>
 
+        <div class="row">
+            <form class="col-lg-4">
+                <fieldset class="form-group">
+                    <label>Remote IP</label>
+                    <input name="host" type="text" class="form-control" id="remote-ip" value="172.17.0.1">
+                </fieldset>
+                <fieldset class="form-group">
+                    <label>Remote Port</label>
+                    <input name="port" type="text" class="form-control" id="remote-port" value="7777">
+                </fieldset>
+                <fieldset class="form-group">
+                    <label>File Path</label>
+                    <input name="path" type="text" class="form-control" id="file-path" value="/tmp/foo">
+                </fieldset>
+                <button id="dl-btn" type="button" class="btn btn-success">Download</button>
+                <button id="ul-btn" type="button" class="btn btn-primary"> Upload </button>
+            </form>
+
+            <div class="col-lg-6 col-lg-offset-2">
+                <!--TODO: display files-->
+                <ul id="local-files">
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <script src="{{ static_url("js/jquery.min.js") }}"></script>
+    <script src="{{ static_url("js/bootstrap.min.js") }}"></script>
+    <script src="{{ static_url("js/app.js") }}"></script>
+    <script type="text/javascript">
+    $(document).ready(() => {
+        $('#ul-btn').click(() => {
+            $.get('/upload', $('form').serialize())
+        })
+        $('#dl-btn').click(() => {
+            $.get('/download', $('form').serialize())
+        })
+    })
+    </script>
 </body>
 </html>
