@@ -21,6 +21,7 @@ from handlers import (
 )
 
 define('port', default=8000, help='run on the given port', type=int)
+define('storage', default=None, help='storage path', type=str)
 define(
     'listen',
     default=18000,
@@ -47,8 +48,8 @@ class MyApp(Application):
         if ioloop is None:
             raise ValueError('Need to pass ioloop')
 
-        self.ioloop = ioloop
-        self.file_server = FileServer(io_loop=ioloop)
+        self.port = options.port
+        self.file_server = FileServer(options.storage, io_loop=ioloop)
         self.file_server.bind(listen, None, socket.AF_INET)
         self.file_server.start()
 
