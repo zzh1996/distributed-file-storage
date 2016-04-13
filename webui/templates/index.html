@@ -38,11 +38,11 @@
             <form class="col-lg-4">
                 <fieldset class="form-group">
                     <label>Remote IP</label>
-                    <input name="host" type="text" class="form-control" id="remote-ip" value="172.17.0.1">
+                    <input name="host" type="text" class="form-control" id="remote-ip" value="127.0.0.1">
                 </fieldset>
                 <fieldset class="form-group">
                     <label>Remote Port</label>
-                    <input name="port" type="text" class="form-control" id="remote-port" value="7777">
+                    <input name="port" type="text" class="form-control" id="remote-port" value="18000">
                 </fieldset>
                 <fieldset class="form-group">
                     <label>File Path</label>
@@ -62,7 +62,6 @@
 
     <script src="{{ static_url("js/jquery.min.js") }}"></script>
     <script src="{{ static_url("js/bootstrap.min.js") }}"></script>
-    <script src="{{ static_url("js/app.js") }}"></script>
     <script type="text/javascript">
     $(document).ready(() => {
         $('#ul-btn').click(() => {
@@ -73,5 +72,6 @@
         })
     })
     </script>
+    {% include app.js %}
 </body>
 </html>
