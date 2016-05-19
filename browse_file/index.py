@@ -5,24 +5,31 @@ from flask import Flask, render_template, request, redirect, url_for
 from flask_bootstrap import Bootstrap
 
 import os,sys
+import pathlib
 
 app = Flask(__name__)
+app.config['BOOTSTRAP_SERVE_LOCAL'] = True
+
 Bootstrap(app)
 
+@app.route('/list')
+def list_dir():
+    if request.args.get('local_path'):
+        arg = request.args.get('local_path')
+        path = pathlib.Path(arg)
+        for f in path.iterdir():
+            if f.is_dir():
+                pass
+            else:
+                pass
+
+    elif request.args.get('remote_path'):
+        pass
+    return ''
+
 @app.route('/')
-def listfiles():
-    path=request.args.get('path', '')
-    if not os.path.isdir(path):
-        return redirect(url_for('listfiles',path='/'), code=302)
-    parentpath=os.path.abspath(os.path.join(path, os.pardir))
-    dirlist=[('..',url_for('listfiles',path=parentpath))]
-    filelist=[]
-    for f in os.listdir(path):
-        if os.path.isfile(os.path.join(path, f)):
-            filelist.append(f)
-        else:
-            dirlist.append((f,url_for('listfiles',path=os.path.join(path, f))))
-    return render_template('index.html',dirlist=dirlist,filelist=filelist,path=path)
+def index():
+    return render_template('index.html')
 
 if __name__ == '__main__':
     app.run(debug=True, port=8000)
