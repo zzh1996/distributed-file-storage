@@ -2,10 +2,12 @@
 # -*- coding: utf-8 -*-
 
 from flask import Flask, render_template, request, redirect, url_for
+from flask_bootstrap import Bootstrap
 
 import os,sys
 
 app = Flask(__name__)
+Bootstrap(app)
 
 @app.route('/')
 def listfiles():
