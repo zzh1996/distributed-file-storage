@@ -8,23 +8,13 @@
 <div class="container">
     <h1>{{ path }}</h1>
     <div class="row">
-        <div class="list-group col-md-6" style="height:100%;overflow:auto;height:90vh;">
-            {% for file,link in dirlist %}
-                <a class="list-group-item" href="{{ link }}">{{ file }}</a>
-            {% endfor %}
-            {% for file in filelist %}
-                <a class="list-group-item" href="#">{{ file }}</a>
-            {% endfor %}
+        <div id="local-files" class="list-group col-md-6" style="height:100%;overflow:auto;height:90vh;">
         </div>
-        <div class="list-group col-md-6" style="height:100%;overflow:auto;height:90vh;">
-            {% for file,link in dirlist %}
-            <a class="list-group-item" href="{{ link }}">{{ file }}</a>
-            {% endfor %}
-            {% for file in filelist %}
-            <a class="list-group-item" href="#">{{ file }}</a>
-            {% endfor %}
+
+        <div id="remote-files" class="list-group col-md-6" style="height:100%;overflow:auto;height:90vh;">
         </div>
     </div>
+
 {% endblock %}
 
 {% block head %}
@@ -32,3 +22,7 @@
 {{fixes.ie8()}}
 {% endblock %}
 
+{% block scripts %}
+{{super()}}
+<script src="/static/js/app.js"></script>
+{% endblock %}

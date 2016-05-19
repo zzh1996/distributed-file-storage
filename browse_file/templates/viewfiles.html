@@ -1,0 +1,7 @@
+
+{% for file,link in dirlist %}
+    <a class="list-group-item" href="{{ link }}">{{ file }}</a>
+{% endfor %}
+{% for file in filelist %}
+    <a class="list-group-item" href="#">{{ file }}</a>
+{% endfor %}
