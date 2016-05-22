@@ -1,0 +1,17 @@
+syntax="proto3";
+package dfs;
+
+message Entry{
+	enum Type{
+		FILE = 0;
+		DIR = 1;
+	}
+	uint64	size = 2;
+	uint64	time = 3;
+	bytes	hash = 4;
+	Type	type = 5;
+}
+
+message DirInfo {
+	map<string, Entry> content = 1;
+}
