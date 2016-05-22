@@ -1,26 +1,24 @@
-;(function() {
-'use strict'
+function clickdir(f,div){
+  if(div==0){
+    getlocal(f);
+  }else{
+    getremote(f);
+  }
+}
 
-  $(document).ready(function() {
-    $.get('/list', {local_path: '/'}, function(data) {
-      console.log(data)
-    })
-
-    $('#local-files').click(function(evt) {
-      console.dir(evt)
-      $.get('/list', {local_path: '/'}, function(data) {
-
-      })
-
-    })
-    $('#remote-files').click(function(evt) {
-      console.dir(evt)
-      $.get('/list', {remote_path: '/'}, function(data) {
-
-      })
-
-    })
+function getlocal(f){
+  $.get('/list', {local_path: f}, function(data) {
+    $('#local-files').html(data);
   })
+}
 
+function getremote(f){
+  $.get('/list', {remote_path: f}, function(data) {
+    $('#remote-files').html(data);
+  })
+}
 
-})();
+$(document).ready(function() {
+  getlocal('/');
+  getremote('/');
+});
