@@ -8,11 +8,16 @@
 <div class="container">
     <h1>{{ path }}</h1>
     <div class="row">
-        <div id="local-files" class="list-group col-md-6" style="height:100%;overflow:auto;height:90vh;">
+        <div id="local-files" class="list-group col-md-5" style="height:100%;overflow:auto;height:90vh;">
         </div>
 
-        <div id="remote-files" class="list-group col-md-6" style="height:100%;overflow:auto;height:90vh;">
+        <div id="remote-files" class="list-group col-md-offset-2 col-md-5" style="height:100%;overflow:auto;height:90vh;">
         </div>
+    </div>
+
+    <div class="row">
+    <button type="button" id="upload-btn" class="btn btn-default">Upload</button>
+    <button type="button" id="download-btn" class="btn btn-default col-md-offset-6">Download</button>
     </div>
 
 {% endblock %}
