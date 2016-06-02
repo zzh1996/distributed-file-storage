@@ -1,12 +1,12 @@
 import dirinfo_pb2
+from pathlib import Path
 import hashlib
-import time
-import dbm.gnu
-
+import pdb
 
 class VPath(object):
 
     db = None
+    buf_pool = {} # type: dict [VPath,mem_buf_record]
 
     def __init__(self, path_stack):
         """
@@ -27,6 +27,20 @@ class VPath(object):
         :return: None
         """
         cls.db = db
+
+    @classmethod
+    def get_root(cls):
+        """
+
+        :return: VPath: the root directory of entire filesystem
+        """
+        root_entry = dirinfo_pb2.Entry()
+        try:
+            root_entry.ParseFromString(cls.db[cls.db[b'root']])
+        except KeyError:
+            root_entry.type = root_entry.DIR
+            print("Empty filesystem")
+        return cls([(root_entry, '')])
 
     @property
     def name(self):
@@ -73,39 +87,93 @@ class VPath(object):
 
     def __str__(self):
         return '/'.join([level[1] for level in self.path_stack])
+
     def __repr__(self):
         return 'VPath(\'{}\')'.format(self.__str__())
 
-    def iterdir(self):
+    def __hash__(self):
+        return hash(self.hash)
+
+    def __eq__(self, other):
+        return self.path_stack == other.path_stack
+
+    def __ne__(self, other):
+        return self.path_stack != other.path_stack
+
+    def __gt__(self, other):
+        return len(self.path_stack) > len(other.path_stack)
+
+    def __ge__(self, other):
+        return len(self.path_stack) >= len(other.path_stack)
+
+    def __lt__(self, other):
+        return len(self.path_stack) < len(other.path_stack)
+
+    def __le__(self, other):
+        return len(self.path_stack) <= len(other.path_stack)
+
+    @staticmethod
+    def get_hash(data):
+        h = hashlib.sha256()
+        if isinstance(data, str):
+            h.update(data.encode())
+        elif isinstance(data, Path):
+            h.update(data.name.encode())
+        else:
+            raise NotImplementedError
+        return h.digest()
+
+    @staticmethod
+    def get_path_hash(p):
+        h = hashlib.sha256()
+        h.update(p.name.encode())
+        return h.digest()
+
+    @staticmethod
+    def get_dirinfo_hash(dirinfo):
+        h = hashlib.sha256()
+        h.update(str(dirinfo).encode())
+        return h.digest()
+
+    def get_dirinfo(self):
         dir_entry = self.path_stack[-1][0]
         dir_hash = dir_entry.hash
-        try:
-            dirinfo = dirinfo_pb2.DirInfo()
+        dirinfo = dirinfo_pb2.DirInfo()
+        if len(dir_hash) > 0:
             dirinfo.ParseFromString(self.db[dir_hash])
-        except:
-            raise NotADirectoryError("{} not a directory".format(self.name))
-        else:
-            for name in dirinfo.content:
-                yield self._from_path_stack(self.path_stack+[(dirinfo.content[name], name)])
+        return dirinfo
 
-    def __truediv__(self, name):
-        if not isinstance(name, str):
+    def iterdir(self):
+        if not self.is_dir():
+            raise NotADirectoryError("{} not a directory".format(self.name))
+        if self in self.buf_pool:
+            dirinfo = self.buf_pool[self].dirinfo
+        else:
+            try:
+                dirinfo = self.get_dirinfo()
+            except:
+                raise FileNotFoundError("index of {} not found".format(self.name))
+        for name in dirinfo.content:
+                yield self._from_path_stack(self.path_stack + [(dirinfo.content[name], name)])
+
+    def __truediv__(self, other):
+        if not isinstance(other, str):
             raise TypeError("argument should be a str")
         elif not self.is_dir():
             raise NotADirectoryError("{} is not a dir".format(self.name))
         else:
-            if name == '.':
+            if other == '.':
                 return self
-            if name == '..':
+            if other == '..':
                 return self.parent
-            dir_entry = self.path_stack[-1][0]
-            dir_hash = dir_entry.hash
-            dirinfo = dirinfo_pb2.DirInfo()
-            dirinfo.ParseFromString(self.db[dir_hash])
-            if name in dirinfo.content.keys():
-                return self._from_path_stack(self.path_stack+[(dirinfo.content[name], name)])
+            if self in self.buf_pool:
+                dirinfo = self.buf_pool[self].dirinfo
             else:
-                raise FileNotFoundError("{} not exist".format(self.name + '/' + name))
+                dirinfo = self.get_dirinfo()
+            if other in dirinfo.content.keys():
+                return self._from_path_stack(self.path_stack + [(dirinfo.content[other], other)])
+            else:
+                raise FileNotFoundError("{} not exist".format(self.name + '/' + other))
 
     def is_file(self):
         dir_entry = self.path_stack[-1][0]
@@ -120,3 +188,141 @@ class VPath(object):
             return True
         else:
             return False
+
+    def is_root(self):
+        return len(self.path_stack) == 1
+
+    def is_new(self):
+        if self.is_dir():
+            return self.hash in self.buf_pool
+        elif self.is_file():
+            return self.time == 0
+        else:
+            return False
+
+    @classmethod
+    def reset_diff(cls):
+        cls.buf_pool.clear()
+
+    def add(self, new_path_set):
+        """
+        add a set of new file/dir into this VPath, buffered until commit
+        :param set of Path new_path_set: file to add
+        will overwrite if there is a same name file/dir existing
+        :return:
+        """
+        if not self.is_dir():
+            raise NotADirectoryError
+        for new_path in new_path_set:
+            if not isinstance(new_path, Path):
+                raise NotImplementedError
+            elif new_path.exists():
+                if self not in self.buf_pool:
+                    self.buf_pool[self] = mem_buf_record(self)
+
+                buf_record = self.buf_pool[self]
+                entry = buf_record.dirinfo.content[new_path.name]
+                if new_path.is_file():
+                    entry.type = dirinfo_pb2.Entry.FILE
+                    entry.hash = str(new_path).encode()
+                    entry.size = new_path.stat().st_size
+                    entry.time = 0
+                    buf_record.new_entry.add(new_path.name)
+                elif new_path.is_dir():
+                    dir_content = list(new_path.iterdir())
+                    if len(dir_content) == 0:
+                        print("{} is empty, won\'t add".format(new_path.name))
+                    entry.type = dirinfo_pb2.Entry.DIR
+                    entry.hash = str(new_path).encode()
+                    entry.size = 0
+                    entry.time = 0
+                    sub_dir = self/new_path.name
+                    buf_record.new_entry.add(new_path.name)
+                    self.buf_pool[sub_dir] = mem_buf_record()
+                    sub_dir.add(set(new_path.iterdir()))
+
+    @classmethod
+    def recursive_delete_new_dir(cls, dir_vpath):
+        if dir_vpath in cls.buf_pool:
+            buf_record = cls.buf_pool[dir_vpath]
+            for new_item in buf_record.new_entry:
+                if buf_record.dirinfo.content[new_item].type == dirinfo_pb2.Entry.DIR:
+                    cls.recursive_delete_new_dir(dir_vpath/new_item)
+            del cls.buf_pool[dir_vpath]
+
+    def rm(self):
+        if not self.is_root():
+            parent = self.parent
+            if parent not in self.buf_pool:
+                self.buf_pool[parent] = mem_buf_record(self.parent)
+            del self.buf_pool[parent].dirinfo.content[self.name]
+            parent_buf_record = self.buf_pool[parent]
+            parent_new_entry = parent_buf_record.new_entry
+            if self.name in parent_new_entry:
+                parent_new_entry.remove(self.name)
+                if len(parent_new_entry) == 0 and not parent_buf_record.has_rm:
+                    self.parent.rm()
+            else:
+                self.buf_pool[parent].has_rm = True
+        if self.is_dir():
+            self.recursive_delete_new_dir(self)
+
+    @classmethod
+    def get_file_info(cls, entry):
+        """
+
+        :param dirinfo_pb2.Entry entry:
+        :return: None
+        """
+        p = Path(entry.hash.decode())
+        stat = p.stat()
+        entry.time = int(stat.st_mtime)
+        entry.size = stat.st_size
+        entry.hash = cls.get_path_hash(p)
+
+    def commit(self):
+        for dir_vpath in list(self.buf_pool.keys()):
+            while dir_vpath.parent not in self.buf_pool:
+                self.buf_pool[dir_vpath.parent] = mem_buf_record(dir_vpath.parent)
+                dir_vpath = dir_vpath.parent
+        for dir_vpath in sorted(self.buf_pool, reverse=True):
+            buf_record = self.buf_pool[dir_vpath]
+            total_size = 0
+            last_mtime = 0
+            for new_item in buf_record.new_entry:
+                if buf_record.dirinfo.content[new_item].type == dirinfo_pb2.Entry.FILE:
+                    self.get_file_info(buf_record.dirinfo.content[new_item])
+            for item in buf_record.dirinfo.content:
+                total_size += buf_record.dirinfo.content[item].size
+                last_mtime = max(last_mtime, buf_record.dirinfo.content[item].time)
+            dir_hash = self.get_dirinfo_hash(buf_record.dirinfo)
+            if dir_vpath.is_root():
+                entry_record = dirinfo_pb2.Entry()
+                entry_record.type = entry_record.DIR
+            else:
+                entry_record = self.buf_pool[dir_vpath.parent].dirinfo.content[dir_vpath.name]
+            entry_record.time = last_mtime
+            entry_record.size = total_size
+            entry_record.hash = dir_hash
+            if dir_vpath.is_root():
+                root_hash = self.get_hash(str(entry_record))
+                self.db[root_hash] = entry_record.SerializeToString()
+                self.db[b'root'] = root_hash
+            else:
+                if dir_vpath.name in self.buf_pool[dir_vpath.parent].new_entry:
+                    self.buf_pool[dir_vpath.parent].new_entry.remove(dir_vpath.name)
+            self.db[dir_hash] = buf_record.dirinfo.SerializeToString()
+        self.buf_pool.clear()
+
+class mem_buf_record(object):
+
+    def __init__(self, vpath=None):
+        """
+
+        :param VPath vpath: if is None, generate a empty dirinfo; or copy from dirinfo of vpath
+        """
+        self.new_entry = set()
+        self.dirinfo = dirinfo_pb2.DirInfo()
+        self.has_rm = False
+        if vpath is not None:
+            self.dirinfo = vpath.get_dirinfo()
