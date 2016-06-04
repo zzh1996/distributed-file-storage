@@ -2,11 +2,18 @@ import dirinfo_pb2
 from pathlib import Path
 import hashlib
 import pdb
+import time
+import code
 
 class VPath(object):
 
     db = None
-    buf_pool = {} # type: dict [VPath,mem_buf_record]
+    buf_pool = {}  # type: dict [VPath,mem_buf_record]
+    upload_file_dict = {}
+    upload_file_num = 0
+    uploaded_file_num = 0
+    upload_index_num = 0
+    uploaded_index_num = 0
 
     def __init__(self, path_stack):
         """
@@ -228,6 +235,7 @@ class VPath(object):
                     entry.size = new_path.stat().st_size
                     entry.time = 0
                     buf_record.new_entry.add(new_path.name)
+                    self.upload_file_dict[str(new_path)] = dirinfo_pb2.Entry()
                 elif new_path.is_dir():
                     dir_content = list(new_path.iterdir())
                     if len(dir_content) == 0:
@@ -240,6 +248,8 @@ class VPath(object):
                     buf_record.new_entry.add(new_path.name)
                     self.buf_pool[sub_dir] = mem_buf_record()
                     sub_dir.add(set(new_path.iterdir()))
+            else:
+                print("{} not found, won't add".format(str(new_path)))
 
     @classmethod
     def recursive_delete_new_dir(cls, dir_vpath):
@@ -253,66 +263,105 @@ class VPath(object):
     def rm(self):
         if not self.is_root():
             parent = self.parent
+            """if it's parent haven't been modified, add the parent in buf_pool"""
             if parent not in self.buf_pool:
                 self.buf_pool[parent] = mem_buf_record(self.parent)
+
+            real_path = self.buf_pool[parent].dirinfo.content[self.name].hash.decode()
+            """real_path :str"""
+            if real_path in self.upload_file_dict:
+                del self.upload_file_dict[real_path]
+
             del self.buf_pool[parent].dirinfo.content[self.name]
             parent_buf_record = self.buf_pool[parent]
             parent_new_entry = parent_buf_record.new_entry
+
+            """if remove a file added, remove it's record in upload_file_dict and buf_pool"""
             if self.name in parent_new_entry:
                 parent_new_entry.remove(self.name)
                 if len(parent_new_entry) == 0 and not parent_buf_record.has_rm:
                     self.parent.rm()
             else:
                 self.buf_pool[parent].has_rm = True
+
         if self.is_dir():
             self.recursive_delete_new_dir(self)
 
     @classmethod
-    def get_file_info(cls, entry):
+    def get_file_info(cls):
         """
-
-        :param dirinfo_pb2.Entry entry:
+        generate each new_file Entry, in order to index the file in database
+        need to use XuQiang's API to upload and get file identifier(such as hash)
         :return: None
         """
-        p = Path(entry.hash.decode())
-        stat = p.stat()
-        entry.time = int(stat.st_mtime)
-        entry.size = stat.st_size
-        entry.hash = cls.get_path_hash(p)
+        for new_file in cls.upload_file_dict:
+            p = Path(new_file)
+            entry = cls.upload_file_dict[new_file]
+            stat = p.stat()
+            entry.time = int(stat.st_mtime)
+            entry.size = stat.st_size
+            """here, may change hash source someday"""
+            entry.hash = cls.get_path_hash(p)
+            cls.uploaded_file_num += 1
+            time.sleep(0.01)
 
-    def commit(self):
-        for dir_vpath in list(self.buf_pool.keys()):
-            while dir_vpath.parent not in self.buf_pool:
-                self.buf_pool[dir_vpath.parent] = mem_buf_record(dir_vpath.parent)
+    @classmethod
+    def send_hash(cls, key, value):
+        """
+
+        :param key: hash of Dirinfo
+        :param value:  the Dirinfo
+        :return:
+        """
+        cls.uploaded_index_num += 1
+        time.sleep(0.2)
+        """need use XuQiang's API to upload hash"""
+
+    @classmethod
+    def commit(cls):
+        for dir_vpath in list(cls.buf_pool.keys()):
+            while dir_vpath.parent not in cls.buf_pool:
+                cls.buf_pool[dir_vpath.parent] = mem_buf_record(dir_vpath.parent)
                 dir_vpath = dir_vpath.parent
-        for dir_vpath in sorted(self.buf_pool, reverse=True):
-            buf_record = self.buf_pool[dir_vpath]
+
+        cls.upload_file_num = len(cls.upload_file_dict)
+        cls.uploaded_file_num = 0
+        cls.get_file_info()
+        cls.upload_index_num = len(cls.buf_pool)
+        cls.uploaded_index_num = 0
+
+        for dir_vpath in sorted(cls.buf_pool, reverse=True):
+            buf_record = cls.buf_pool[dir_vpath]
             total_size = 0
             last_mtime = 0
             for new_item in buf_record.new_entry:
-                if buf_record.dirinfo.content[new_item].type == dirinfo_pb2.Entry.FILE:
-                    self.get_file_info(buf_record.dirinfo.content[new_item])
+                new_item_entry = buf_record.dirinfo.content[new_item]
+                if new_item_entry.type == dirinfo_pb2.Entry.FILE:
+                    buf_record.dirinfo.content[new_item].CopyFrom(cls.upload_file_dict[new_item_entry.hash.decode()])
             for item in buf_record.dirinfo.content:
                 total_size += buf_record.dirinfo.content[item].size
                 last_mtime = max(last_mtime, buf_record.dirinfo.content[item].time)
-            dir_hash = self.get_dirinfo_hash(buf_record.dirinfo)
+            dir_hash = cls.get_dirinfo_hash(buf_record.dirinfo)
             if dir_vpath.is_root():
                 entry_record = dirinfo_pb2.Entry()
                 entry_record.type = entry_record.DIR
             else:
-                entry_record = self.buf_pool[dir_vpath.parent].dirinfo.content[dir_vpath.name]
+                entry_record = cls.buf_pool[dir_vpath.parent].dirinfo.content[dir_vpath.name]
             entry_record.time = last_mtime
             entry_record.size = total_size
             entry_record.hash = dir_hash
             if dir_vpath.is_root():
-                root_hash = self.get_hash(str(entry_record))
-                self.db[root_hash] = entry_record.SerializeToString()
-                self.db[b'root'] = root_hash
+                root_hash = cls.get_hash(str(entry_record))
+                cls.db[root_hash] = entry_record.SerializeToString()
+                cls.db[b'root'] = root_hash
             else:
-                if dir_vpath.name in self.buf_pool[dir_vpath.parent].new_entry:
-                    self.buf_pool[dir_vpath.parent].new_entry.remove(dir_vpath.name)
-            self.db[dir_hash] = buf_record.dirinfo.SerializeToString()
-        self.buf_pool.clear()
+                if dir_vpath.name in cls.buf_pool[dir_vpath.parent].new_entry:
+                    cls.buf_pool[dir_vpath.parent].new_entry.remove(dir_vpath.name)
+            serialized = buf_record.dirinfo.SerializeToString()
+            cls.send_hash(dir_hash, serialized)
+            cls.db[dir_hash] = serialized
+        cls.buf_pool.clear()
+
 
 class mem_buf_record(object):
 
