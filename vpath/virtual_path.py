@@ -1,10 +1,11 @@
 from . import dirinfo_pb2
 from pathlib import Path
 import hashlib
-import pdb
+import os
 import time
-import code
 
+import functools
+@functools.total_ordering
 class VPath(object):
 
     db = None
@@ -68,12 +69,7 @@ class VPath(object):
 
     @property
     def suffix(self):
-        name = self.name
-        i = name.rfind('.')
-        if 0 < i < len(name)-1:
-            return name[i:]
-        else:
-            return ''
+        return os.path.splitext(self.name)[1]
 
     @property
     def parent(self):
@@ -93,7 +89,7 @@ class VPath(object):
         return self
 
     def __str__(self):
-        return '/'.join([level[1] for level in self.path_stack])
+        return os.sep.join([level[1] for level in self.path_stack])
 
     def __repr__(self):
         return 'VPath(\'{}\')'.format(self.__str__())
@@ -104,20 +100,8 @@ class VPath(object):
     def __eq__(self, other):
         return self.path_stack == other.path_stack
 
-    def __ne__(self, other):
-        return self.path_stack != other.path_stack
-
-    def __gt__(self, other):
-        return len(self.path_stack) > len(other.path_stack)
-
-    def __ge__(self, other):
-        return len(self.path_stack) >= len(other.path_stack)
-
     def __lt__(self, other):
         return len(self.path_stack) < len(other.path_stack)
-
-    def __le__(self, other):
-        return len(self.path_stack) <= len(other.path_stack)
 
     @staticmethod
     def get_hash(data):
@@ -161,7 +145,7 @@ class VPath(object):
             except:
                 raise FileNotFoundError("index of {} not found".format(self.name))
         for name in dirinfo.content:
-                yield self._from_path_stack(self.path_stack + [(dirinfo.content[name], name)])
+            yield self._from_path_stack(self.path_stack + [(dirinfo.content[name], name)])
 
     def __truediv__(self, other):
         if not isinstance(other, str):
@@ -239,7 +223,7 @@ class VPath(object):
                 elif new_path.is_dir():
                     dir_content = list(new_path.iterdir())
                     if len(dir_content) == 0:
-                        print("{} is empty, won\'t add".format(new_path.name))
+                        print("{} is empty, won't add".format(new_path.name))
                     entry.type = dirinfo_pb2.Entry.DIR
                     entry.hash = str(new_path).encode()
                     entry.size = 0
