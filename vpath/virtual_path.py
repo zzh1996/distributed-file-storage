@@ -193,7 +193,7 @@ class VPath(object):
         :return: bool
         """
         if self.is_dir():
-            return self.hash in self.buf_pool
+            return self in self.buf_pool
         elif self.is_file():
             return self.time == 0
         else:
