@@ -6,8 +6,8 @@ from flask_bootstrap import Bootstrap
 
 import os
 import sys
-import pathlib
-from virtual_path
+from pathlib import *
+from vpath.virtual_path import *
 import dbm
 
 app = Flask(__name__)
@@ -21,7 +21,7 @@ def list_dir():
     if request.args.get('local_path'):
         div = 0
         arg = request.args.get('local_path')
-        path = pathlib.Path(arg)
+        path = Path(arg)
         filelist = [('..', str(path.parent), 0)]
         for f in path.iterdir():
             if f.is_dir():
@@ -31,7 +31,7 @@ def list_dir():
     elif request.args.get('remote_path'):
         div = 1
         arg = request.args.get('remote_path')
-        path = pathlib.Path(arg)
+        path = Path(arg)
         filelist = [('..', str(path.parent), 0)]
         for f in path.iterdir():
             if f.is_dir():
