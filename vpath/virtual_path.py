@@ -187,6 +187,11 @@ class VPath(object):
         return len(self.path_stack) == 1
 
     def is_new(self):
+        """
+        新添加未commit的目录的特点是，在buf_pool中
+        新添加未commit的文件的特点是，time，size == 0
+        :return: bool
+        """
         if self.is_dir():
             return self.hash in self.buf_pool
         elif self.is_file():
@@ -249,27 +254,28 @@ class VPath(object):
 
     def rm(self):
         if not self.is_root():
+            print("rm {}".format(str(self)))
             parent = self.parent
             """if it's parent haven't been modified, add the parent in buf_pool"""
             if parent not in self.buf_pool:
                 self.buf_pool[parent] = mem_buf_record(self.parent)
-
-            real_path = self.buf_pool[parent].dirinfo.content[self.name].hash.decode()
-            """real_path :str"""
-            if real_path in self.upload_file_dict:
-                del self.upload_file_dict[real_path]
-
-            del self.buf_pool[parent].dirinfo.content[self.name]
             parent_buf_record = self.buf_pool[parent]
             parent_new_entry = parent_buf_record.new_entry
 
             """if remove a file added, remove it's record in upload_file_dict and buf_pool"""
             if self.name in parent_new_entry:
                 parent_new_entry.remove(self.name)
-                if len(parent_new_entry) == 0 and not parent_buf_record.has_rm:
-                    self.parent.rm()
+                # 不递归删除空目录了，下面的代码被注释掉
+                # if len(parent_new_entry) == 0 and not parent_buf_record.has_rm:
+                #     self.parent.rm()
+                real_path = self.buf_pool[parent].dirinfo.content[self.name].hash.decode()
+                """real_path :str"""
+                if real_path in self.upload_file_dict:
+                    del self.upload_file_dict[real_path]
+
             else:
                 self.buf_pool[parent].has_rm = True
+            del parent_buf_record.dirinfo.content[self.name]
 
         if self.is_dir():
             self.recursive_delete_new_dir(self)
