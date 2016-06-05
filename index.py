@@ -27,6 +27,7 @@ def vpath_from_full_path(path):
             vp = vp / subdir
     return vp
 
+
 @app.route('/list')
 def list_dir():
     if request.args.get('local_path'):
@@ -58,15 +59,17 @@ def list_dir():
     return render_template(
         'viewfiles.html', curr_path=curr_path, filelist=filelist, div=div)
 
-@app.route('/upload',methods=['POST'])
+
+@app.route('/upload', methods=['POST'])
 def upload():
-    uploadlist=json.loads(request.form['uploadlist'])
-    remotepath=request.form['remotepath']
-    print(remotepath,file=sys.stderr)
-    print(uploadlist,file=sys.stderr)
+    uploadlist = json.loads(request.form['uploadlist'])
+    remotepath = request.form['remotepath']
+    print(remotepath, file=sys.stderr)
+    print(uploadlist, file=sys.stderr)
     vp = vpath_from_full_path(remotepath)
     vp.add([Path(p) for p in uploadlist])
     return "ok"
+
 
 @app.route('/')
 def index():
