@@ -37,7 +37,7 @@ $(document).ready(function() {
       var path=ele.getAttribute('fullpath');
       uploadlist.push(path);
     })
-    if(uploadlist){
+    if(uploadlist.length>0){
       console.log(JSON.stringify(uploadlist));
       console.log($('#remote-files > h1').text());
       remotepath=$('#remote-files > h1').text()
@@ -45,6 +45,8 @@ $(document).ready(function() {
         getremote(remotepath);
         alert(data);
       });
+    }else{
+      alert('Please select files');
     }
   })
 });
