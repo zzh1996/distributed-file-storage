@@ -13,14 +13,13 @@ import json
 import threading
 import atexit
 
-db = dbm.open('storage.db', 'c')
-VPath.bind_to_db(db)
-
 app = Flask(__name__)
 app.config['BOOTSTRAP_SERVE_LOCAL'] = True
 
-Bootstrap(app)
+db = dbm.open('storage.db', 'c')
+VPath.bind_to_db(db)
 
+Bootstrap(app)
 
 def vpath_from_full_path(path):
     vp = VPath.get_root()
@@ -111,4 +110,4 @@ def cleanup():
 
 if __name__ == '__main__':
     atexit.register(cleanup)
-    app.run(debug=True, port=8000)
+    app.run(debug=True, use_reloader=False, port=8000)
