@@ -34,7 +34,7 @@ $(document).ready(function() {
     var localRoot = $('#local-files > h1').text();
     Array.prototype.slice.call($('.active')).forEach(function(ele) {
       var path = localRoot + $.trim(ele.innerText);
-      console.log(path);
+      alert(path);
     })
   })
 });

@@ -1,3 +1,6 @@
+storage.db.dat
+storage.db.dir
+
 *.swp
 *.[oa]
 *.py[co]
