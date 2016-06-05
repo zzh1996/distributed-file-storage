@@ -1,5 +1,4 @@
-storage.db.dat
-storage.db.dir
+storage.db.*
 
 *.swp
 *.[oa]
