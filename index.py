@@ -11,6 +11,7 @@ from vpath.virtual_path import *
 import dbm
 import json
 import threading
+import atexit
 
 db = dbm.open('storage.db', 'c')
 VPath.bind_to_db(db)
@@ -35,22 +36,22 @@ def list_dir():
         div = 0
         arg = request.args.get('local_path')
         path = Path(arg)
-        filelist = [('..', str(path.parent), 0)]
+        filelist = [('..', str(path.parent), 0, False)]
         for f in path.iterdir():
             if f.is_dir():
-                filelist.append((f.name, str(f), 0))
+                filelist.append((f.name, str(f), 0, False))
             else:
-                filelist.append((f.name, str(f), 1))
+                filelist.append((f.name, str(f), 1, False))
     elif request.args.get('remote_path'):
         div = 1
         arg = request.args.get('remote_path')
         path = vpath_from_full_path(arg)
-        filelist = [('..', str(path.parent), 0)]
+        filelist = [('..', str(path.parent), 0, False)]
         for f in path.iterdir():
             if f.is_dir():
-                filelist.append((f.name, str(f), 0))
+                filelist.append((f.name, str(f), 0, f.is_new()))
             else:
-                filelist.append((f.name, str(f), 1))
+                filelist.append((f.name, str(f), 1, f.is_new()))
     else:
         abort(404)
     filelist.sort(key=lambda f: (f[2], f[0]))
@@ -83,9 +84,15 @@ def delete():
         (vp / file).rm()
     return 'ok'
 
+def commit():
+    print('start commit')
+    VPath.commit()
+    db.sync()
+    print('commit finished')
+
 @app.route('/sync', methods=['POST'])
 def sync():
-    t=threading.Thread(target=VPath.commit)
+    t=threading.Thread(target=commit)
     t.start()
     return 'ok'
 
@@ -98,6 +105,11 @@ def status():
 def index():
     return render_template('index.html')
 
+def cleanup():
+    db.sync()
+    db.close()
+    print('clean up finished')
 
 if __name__ == '__main__':
+    atexit.register(cleanup)
     app.run(debug=True, port=8000)
