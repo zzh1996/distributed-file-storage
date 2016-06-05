@@ -22,7 +22,7 @@ function getremote(f) {
 }
 
 $(document).ready(function() {
-  getlocal('/');
+  getlocal('/home/');
   getremote('/');
 
   $('#download-btn').click(function(evt) {

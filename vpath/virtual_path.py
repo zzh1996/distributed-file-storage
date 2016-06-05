@@ -93,7 +93,10 @@ class VPath(object):
         return self
 
     def __str__(self):
-        return '/'.join([level[1] for level in self.path_stack])
+        if self.is_root():
+            return '/'
+        else:
+            return '/'.join([level[1] for level in self.path_stack])
 
     def __repr__(self):
         return 'VPath(\'{}\')'.format(self.__str__())
