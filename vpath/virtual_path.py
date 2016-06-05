@@ -1,4 +1,4 @@
-import dirinfo_pb2
+from . import dirinfo_pb2
 from pathlib import Path
 import hashlib
 import pdb
