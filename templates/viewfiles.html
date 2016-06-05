@@ -1,8 +1,8 @@
 <h1>{{ curr_path }}</h1>
 {% for f in filelist %}
 {% if f[2]==0 %}
-    <a class="list-group-item" href="#" onclick=clickdir("{{f[1]}}",{{div}})><span class="glyphicon glyphicon-folder-open"></span> {{ f[0] }}</a>
+    <a class="list-group-item" href="#" onclick=clickdir("{{f[1]}}",{{div}}); fullpath="{{f[1]}}"><span class="glyphicon glyphicon-folder-open"></span> {{ f[0] }}</a>
 {% else %}
-    <a class="list-group-item" href="#" onclick=$(this).toggleClass("active");><span class="glyphicon glyphicon-file"></span> {{ f[0] }}</a>
+    <a class="list-group-item" href="#" onclick=$(this).toggleClass("active"); fullpath="{{f[1]}}"><span class="glyphicon glyphicon-file"></span> {{ f[0] }}</a>
 {% endif %}
 {% endfor %}

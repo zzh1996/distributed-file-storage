@@ -1,4 +1,3 @@
-
 function clickdir(f, div) {
   switch (div) {
     case 0:
@@ -31,10 +30,21 @@ $(document).ready(function() {
   })
 
   $('#upload-btn').click(function(evt) {
-    var localRoot = $('#local-files > h1').text();
+    var uploadlist=[]
+    //var localRoot = $('#local-files > h1').text();
     Array.prototype.slice.call($('.active')).forEach(function(ele) {
-      var path = localRoot + $.trim(ele.innerText);
-      alert(path);
+      //var path = localRoot + $.trim(ele.innerText);
+      var path=ele.getAttribute('fullpath');
+      uploadlist.push(path);
     })
+    if(uploadlist){
+      console.log(JSON.stringify(uploadlist));
+      console.log($('#remote-files > h1').text());
+      remotepath=$('#remote-files > h1').text()
+      $.post('/upload',{uploadlist:JSON.stringify(uploadlist),remotepath:remotepath},function(data){
+        getremote(remotepath);
+        alert(data);
+      });
+    }
   })
 });
