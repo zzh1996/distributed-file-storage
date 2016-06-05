@@ -71,6 +71,18 @@ def upload():
     return "ok"
 
 
+@app.route('/delete', methods=['POST'])
+def delete():
+    deletelist = json.loads(request.form['deletelist'])
+    remotepath = request.form['remotepath']
+    print(remotepath, file=sys.stderr)
+    print(deletelist, file=sys.stderr)
+    vp = vpath_from_full_path(remotepath)
+    for file in deletelist:
+        (vp / file).rm()
+    return "ok"
+
+
 @app.route('/')
 def index():
     return render_template('index.html')
