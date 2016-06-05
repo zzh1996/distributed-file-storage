@@ -354,6 +354,7 @@ class VPath(object):
             cls.send_hash(dir_hash, serialized)
             cls.db[dir_hash] = serialized
         cls.buf_pool.clear()
+        cls.upload_file_dict.clear()
 
 
 class mem_buf_record(object):
