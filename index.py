@@ -87,7 +87,6 @@ def delete():
 def commit():
     print('start commit')
     VPath.commit()
-    db.sync()
     print('commit finished')
 
 @app.route('/sync', methods=['POST'])

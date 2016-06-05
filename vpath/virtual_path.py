@@ -355,6 +355,11 @@ class VPath(object):
             cls.db[dir_hash] = serialized
         cls.buf_pool.clear()
         cls.upload_file_dict.clear()
+        cls.db.sync()
+
+    @classmethod
+    def clean_up(cls):
+        cls.db.close()
 
 
 class mem_buf_record(object):
