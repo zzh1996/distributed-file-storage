@@ -14,13 +14,13 @@ function clickdir(f, div) {
 function getlocal(f) {
   $.get('/list', {local_path: f}, function(data) {
     $('#local-files').html(data);
-  })
+  });
 }
 
 function getremote(f) {
   $.get('/list', {remote_path: f}, function(data) {
     $('#remote-files').html(data);
-  })
+  });
 }
 
 $(document).ready(function() {
@@ -29,7 +29,7 @@ $(document).ready(function() {
 
   $('#download-btn').click(function(evt) {
     console.dir($('.active'));
-  })
+  });
 
   $('#upload-btn').click(function(evt) {
     var uploadlist=[]
@@ -52,7 +52,7 @@ $(document).ready(function() {
     }else{
       alert('Please select files!');
     }
-  })
+  });
 
   $('#delete-btn').click(function(evt) {
     var deletelist=[];
@@ -71,5 +71,36 @@ $(document).ready(function() {
     }else{
       alert('Please select files!');
     }
-  })
+  });
+
+  $('#sync-btn').click(function(evt) {
+    if(confirm('Are you sure to synchronize all changes?')){
+      var remotepath=$('#remote-files h3').text();
+      $.post('/sync',{},function(data){
+        var dialog = $('#progressdialog');
+        dialog.modal('show');
+        var task=setInterval(function(){
+          $.get('/status',{},function(data){
+            var nums=JSON.parse(data);
+            var percent=0;
+            var text='';
+            if(nums['upload_file_num']!=nums['uploaded_file_num']){
+              percent=nums['uploaded_file_num']/nums['upload_file_num'];
+              text='Uploading files...('+nums['uploaded_file_num']+'/'+nums['upload_file_num']+')';
+            }else if(nums['uploaded_index_num']!=nums['upload_index_num']){
+              percent=nums['uploaded_index_num']/nums['upload_index_num'];
+              text='Uploading index...('+nums['uploaded_index_num']+'/'+nums['upload_index_num']+')';;
+            }else{
+              clearInterval(task);
+              dialog.modal('hide');
+              getremote(remotepath);
+            }
+            percent=percent*100;
+            $('.progress-bar').css('width', percent+'%').attr('aria-valuenow', percent);
+            $('#progresstext').html(text);
+          });
+        },500);
+      });
+    }
+  });
 });

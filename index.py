@@ -10,6 +10,7 @@ from pathlib import *
 from vpath.virtual_path import *
 import dbm
 import json
+import threading
 
 db = dbm.open('storage.db', 'c')
 VPath.bind_to_db(db)
@@ -68,7 +69,7 @@ def upload():
     print(uploadlist, file=sys.stderr)
     vp = vpath_from_full_path(remotepath)
     vp.add([Path(p) for p in uploadlist])
-    return "ok"
+    return 'ok'
 
 
 @app.route('/delete', methods=['POST'])
@@ -80,8 +81,18 @@ def delete():
     vp = vpath_from_full_path(remotepath)
     for file in deletelist:
         (vp / file).rm()
-    return "ok"
+    return 'ok'
 
+@app.route('/sync', methods=['POST'])
+def sync():
+    t=threading.Thread(target=VPath.commit)
+    t.start()
+    return 'ok'
+
+@app.route('/status')
+def status():
+    return json.dumps({"uploaded_file_num":VPath.uploaded_file_num,"upload_file_num":VPath.upload_file_num,
+                       "uploaded_index_num":VPath.uploaded_index_num,"upload_index_num":VPath.upload_index_num});
 
 @app.route('/')
 def index():
