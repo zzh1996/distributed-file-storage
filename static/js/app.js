@@ -81,15 +81,18 @@ $(document).ready(function() {
         dialog.modal('show');
         var task=setInterval(function(){
           $.get('/status',{},function(data){
-            var nums=JSON.parse(data);
+            var status=JSON.parse(data);
             var percent=0;
             var text='';
-            if(nums['upload_file_num']!=nums['uploaded_file_num']){
-              percent=nums['uploaded_file_num']/nums['upload_file_num'];
-              text='Uploading files...('+nums['uploaded_file_num']+'/'+nums['upload_file_num']+')';
-            }else if(nums['uploaded_index_num']!=nums['upload_index_num']){
-              percent=nums['uploaded_index_num']/nums['upload_index_num'];
-              text='Uploading index...('+nums['uploaded_index_num']+'/'+nums['upload_index_num']+')';;
+            var objname='';
+            if(status['upload_file_num']!=status['uploaded_file_num']){
+              percent=status['uploaded_file_num']/status['upload_file_num'];
+              text='Uploading files...('+status['uploaded_file_num']+'/'+status['upload_file_num']+') ';
+              objname=status['uploading_file_name'];
+            }else if(status['uploaded_index_num']!=status['upload_index_num']){
+              percent=status['uploaded_index_num']/status['upload_index_num'];
+              text='Uploading index...('+status['uploaded_index_num']+'/'+status['upload_index_num']+') ';
+              objname=status['uploading_index_name'];
             }else{
               clearInterval(task);
               dialog.modal('hide');
@@ -97,7 +100,8 @@ $(document).ready(function() {
             }
             percent=percent*100;
             $('.progress-bar').css('width', percent+'%').attr('aria-valuenow', percent);
-            $('#progresstext').html(text);
+            $('#progresstext').text(text);
+            $('#objname').text(objname);
           });
         },500);
       });

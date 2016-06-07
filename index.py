@@ -97,7 +97,8 @@ def sync():
 @app.route('/status')
 def status():
     return json.dumps({"uploaded_file_num":VPath.uploaded_file_num,"upload_file_num":VPath.upload_file_num,
-                       "uploaded_index_num":VPath.uploaded_index_num,"upload_index_num":VPath.upload_index_num});
+                       "uploaded_index_num":VPath.uploaded_index_num,"upload_index_num":VPath.upload_index_num,
+                       "uploading_file_name":VPath.uploading_file_name,"uploading_index_name":VPath.uploading_index_name});
 
 @app.route('/')
 def index():
