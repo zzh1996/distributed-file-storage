@@ -13,8 +13,10 @@ class VPath(object):
     upload_file_dict = {}
     upload_file_num = 0
     uploaded_file_num = 0
+    uploading_file_name = ''
     upload_index_num = 0
     uploaded_index_num = 0
+    uploading_index_name = ''
 
     def __init__(self, path_stack):
         """
@@ -296,6 +298,7 @@ class VPath(object):
             """here, may change hash source someday"""
             entry.hash = cls.get_path_hash(p)
             cls.uploaded_file_num += 1
+            cls.uploading_file_name = new_file
             time.sleep(0.01)
 
     @classmethod
@@ -319,9 +322,11 @@ class VPath(object):
 
         cls.upload_file_num = len(cls.upload_file_dict)
         cls.uploaded_file_num = 0
+        cls.uploading_file_name = ''
         cls.get_file_info()
         cls.upload_index_num = len(cls.buf_pool)
         cls.uploaded_index_num = 0
+        cls.uploading_index_name = ''
 
         for dir_vpath in sorted(cls.buf_pool, reverse=True):
             buf_record = cls.buf_pool[dir_vpath]
@@ -351,6 +356,7 @@ class VPath(object):
                 if dir_vpath.name in cls.buf_pool[dir_vpath.parent].new_entry:
                     cls.buf_pool[dir_vpath.parent].new_entry.remove(dir_vpath.name)
             serialized = buf_record.dirinfo.SerializeToString()
+            cls.uploading_index_name = str(dir_vpath)
             cls.send_hash(dir_hash, serialized)
             cls.db[dir_hash] = serialized
         cls.buf_pool.clear()
