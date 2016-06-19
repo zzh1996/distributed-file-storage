@@ -21,14 +21,14 @@ enum Result{
 	ERROR = 2;        // error message in payload
 }
 message FS_Request{
-	Type type;
-	repeated bytes payload;
+	Type type = 1;
+	repeated bytes payload = 2;
 }
 
 message FS_Response{
-	Type type;
-	Result result;
-	repeated bytes payload;
+	Type type = 1;
+	Result result = 2;
+	repeated bytes payload = 3;
 }
 
 message BC_Request{
