@@ -1,0 +1,40 @@
+syntax="proto3";
+package dfs;
+
+enum Type{
+	FILE_DOWNLOAD = 0;
+		// Request with the hash of file(payload[0]) and download location(path of local filesystem)(payload[1])
+		// Response, OK means download complete, ERROR means error message(string) in payload
+	INDEX_DOWNLOAD = 1;
+		// Resuest with the hash of index
+		// Response, OK means index content stored in payload, ERROR is same as above
+	FILE_UPLOAD = 2;
+		// Request with the path of the file to upload
+		// Response, OK means upload complete, FAST_FORWARD means don't need upload, ERROR is same as above
+	INDEX_UPLOAD = 3;
+		// Request with the hash of an index(payload[0]) and its content(in two repeated bytes)(payload[1])
+		// Response, same as above
+}
+enum Result{
+	OK = 0;
+	FAST_FORWARD = 1; // Already have the same hash
+	ERROR = 2;        // error message in payload
+}
+message FS_Request{
+	Type type;
+	repeated bytes payload;
+}
+
+message FS_Response{
+	Type type;
+	Result result;
+	repeated bytes payload;
+}
+
+message BC_Request{
+
+}
+
+message BC_Response{
+
+}
