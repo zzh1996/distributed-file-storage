@@ -1,5 +1,10 @@
+
+
 syntax="proto3";
-package dfs;
+package center;
+
+option java_package = "cn.edu.ustc.center";
+option java_outer_classname = "ApiProtos";
 
 enum Type{
 	FILE_DOWNLOAD = 0;
