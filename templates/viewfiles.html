@@ -1,11 +1,27 @@
 <div class="panel panel-default">
-<div class="panel-heading"><h3 class="panel-title">{{ curr_path }}</h3></div>
+<div class="panel-heading">
+  <h3 class="panel-title">{{ curr_path }}</h3>
+</div>
 <div class="panel-body" style="overflow-y:scroll;overflow-x:hidden;height:80vh;padding:0;">
 {% for f in filelist %}
 {% if f[2]==0 %}
-    <div class="list-group-item" onclick=$(this).toggleClass("active"); fullpath="{{f[1]}}"><span class="glyphicon glyphicon-folder-open"></span> {% if f[3] %}<span class="label label-danger">NEW</span>{% endif %} <span href="#" style="cursor:pointer" onclick=clickdir("{{f[1]}}",{{div}});>{{ f[0] }}</span></div>
+    <div class="list-group-item" onclick=$(this).toggleClass("active"); fullpath="{{f[1]}}">
+      <span class="glyphicon glyphicon-folder-open"></span>
+      {% if f[3] %}
+      <span class="label label-danger">NEW</span>
+      {% endif %}
+      <span href="#" style="cursor:pointer" onclick=clickdir("{{f[1]}}",{{div}});>
+        {{ f[0] }}
+      </span>
+    </div>
 {% else %}
-    <div class="list-group-item" onclick=$(this).toggleClass("active"); fullpath="{{f[1]}}"><span class="glyphicon glyphicon-file"></span> {% if f[3] %}<span class="label label-danger">NEW</span>{% endif %} {{ f[0] }}</div>
+    <div class="list-group-item" onclick=$(this).toggleClass("active"); fullpath="{{f[1]}}">
+      <span class="glyphicon glyphicon-file"></span>
+      {% if f[3] %}
+      <span class="label label-danger">NEW</span>
+      {% endif %}
+      {{ f[0] }}
+    </div>
 {% endif %}
 {% endfor %}
 </div>
