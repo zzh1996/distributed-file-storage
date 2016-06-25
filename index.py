@@ -12,6 +12,7 @@ import dbm
 import json
 import threading
 import atexit
+import datetime
 
 app = Flask(__name__)
 app.config['BOOTSTRAP_SERVE_LOCAL'] = True
@@ -28,6 +29,16 @@ Path.is_new = lambda self: False
 Path.size = property(lambda self: self.stat().st_size)
 Path.time = property(lambda self: int(self.stat().st_mtime))
 
+
+def sizeof_fmt(num, suffix='B'):
+    for unit in ['','K','M','G','T','P','E','Z']:
+        if abs(num) < 1024.0:
+            return "%3.1f %s%s" % (num, unit, suffix)
+        num /= 1024.0
+    return "%.1f %s%s" % (num, 'Y', suffix)
+
+def time_fmt(timestamp):
+    return datetime.datetime.fromtimestamp(timestamp).strftime('%Y-%m-%d %H:%M:%S')
 
 @app.route('/list')
 def list_dir():
@@ -49,9 +60,9 @@ def list_dir():
     for f in path.iterdir():
         # (name, fullpath, is_file, is_new, size, mtime)
         if f.is_dir():
-            filelist.append((f.name, str(f), 0, f.is_new(), f.size, f.time))
+            filelist.append((f.name, str(f), 0, f.is_new(), sizeof_fmt(f.size), time_fmt(f.time)))
         else:
-            filelist.append((f.name, str(f), 1, f.is_new(), f.size, f.time))
+            filelist.append((f.name, str(f), 1, f.is_new(), sizeof_fmt(f.size), time_fmt(f.time)))
     filelist.sort(key=lambda f: (f[2], f[0]))
     curr_path = str(path)
     if not curr_path.endswith(os.sep):
