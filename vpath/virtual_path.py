@@ -93,11 +93,21 @@ class VPath(object):
         self = cls(path_stack)
         return self
 
+    @classmethod
+    def from_full_path(cls, path):
+        """
+
+        :param str path:
+        :return: VPath object
+        """
+        vp = cls.get_root()
+        return vp.subitem(path)
+
     def __str__(self):
         if self.is_root():
-            return os.sep
+            return '/'
         else:
-            return os.sep.join([level[1] for level in self.path_stack])
+            return '/'.join([level[1] for level in self.path_stack])
 
     def __repr__(self):
         return 'VPath(\'{}\')'.format(self.__str__())
@@ -154,6 +164,18 @@ class VPath(object):
                 raise FileNotFoundError("index of {} not found".format(self.name))
         for name in dirinfo.content:
             yield self._from_path_stack(self.path_stack + [(dirinfo.content[name], name)])
+
+    def subitem(self, relative_path):
+        """
+
+        :param str relative_path:
+        :return: VPath object
+        """
+        vp = self
+        for subdir in relative_path.split('/')[1:]:
+            if subdir:
+                vp /= subdir
+        return vp
 
     def __truediv__(self, other):
         if not isinstance(other, str):
@@ -219,11 +241,11 @@ class VPath(object):
         """
         if not self.is_dir():
             raise NotADirectoryError
-        self.metadata_lock.acquire()
         for new_path in new_path_set:
             if not isinstance(new_path, Path):
                 raise NotImplementedError
             elif new_path.exists():
+                self.metadata_lock.acquire()
                 if self not in self.buf_pool:
                     self.buf_pool[self] = mem_buf_record(self)
 
@@ -236,6 +258,7 @@ class VPath(object):
                     entry.time = 0
                     buf_record.new_entry.add(new_path.name)
                     self.upload_file_dict[str(new_path)] = dirinfo_pb2.Entry()
+                    self.metadata_lock.release()
                 elif new_path.is_dir():
                     dir_content = list(new_path.iterdir())
                     if len(dir_content) == 0:
@@ -247,10 +270,10 @@ class VPath(object):
                     sub_dir = self/new_path.name
                     buf_record.new_entry.add(new_path.name)
                     self.buf_pool[sub_dir] = mem_buf_record()
+                    self.metadata_lock.release()
                     sub_dir.add(set(new_path.iterdir()))
             else:
                 print("{} not found, won't add".format(str(new_path)))
-        self.metadata_lock.release()
 
     @classmethod
     def recursive_delete_new_dir(cls, dir_vpath):
