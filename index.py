@@ -57,10 +57,8 @@ def list_dir():
         # (name, fullpath, is_file, is_new, size, mtime)
         if f.is_dir():
             filelist.append((f.name, str(f), 0, f.is_new(), f.size, f.time))
-            # filelist.append((f.name, str(f), 0, f.is_new()))
         else:
             filelist.append((f.name, str(f), 1, f.is_new(), f.size, f.time))
-            # filelist.append((f.name, str(f), 1, f.is_new()))
     filelist.sort(key=lambda f: (f[2], f[0]))
     curr_path = str(path)
     if not curr_path.endswith(os.sep):
@@ -88,6 +86,9 @@ def download():
     if DEBUG:
         print(download_list)
         print(local_root)
+    vdir = vpath_from_full_path(os.path.dirname(download_list[0]))
+    for f in map(os.path.basename, download_list):
+        (vdir / f).download(local_root)
     return 'ok'
 
 
