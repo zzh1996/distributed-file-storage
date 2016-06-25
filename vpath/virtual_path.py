@@ -117,7 +117,7 @@ class VPath(object):
             if parts[0] == '/':
                 vp = VPath.get_root()
                 parts = parts[1:]
-            vp = functools.reduce(self.__truediv__, parts, vp)
+            vp = functools.reduce(VPath.__truediv__, parts, vp)
         return vp
 
     def __str__(self):
