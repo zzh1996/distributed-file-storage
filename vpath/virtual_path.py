@@ -414,7 +414,7 @@ class VPath(object):
         cls.upload_file_dict.clear()
         cls.metadata_lock.release()
 
-        cls.db.sync()
+        #cls.db.sync()
 
     @classmethod
     def clean_up(cls):
