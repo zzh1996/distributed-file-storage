@@ -15,7 +15,7 @@ enum Type{
 		// Response, OK means index content stored in payload, ERROR is same as above
 	FILE_UPLOAD = 2;
 		// Request with the path of the file to upload
-		// Response, OK means upload complete, FAST_FORWARD means don't need upload, ERROR is same as above
+		// Response, OK means upload complete, FAST_FORWARD means don't need upload, file hash in payload[0]. ERROR is same as above
 	INDEX_UPLOAD = 3;
 		// Request with the hash of an index(payload[0]) and its content(in two repeated bytes)(payload[1])
 		// Response, same as above
