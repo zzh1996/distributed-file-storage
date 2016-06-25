@@ -291,6 +291,18 @@ class VPath(object):
             self.recursive_delete_new_dir(self)
         self.metadata_lock.release()
 
+    def download(self, localpath):
+        """
+        下载此文件/夹到一个本地目录(localpath)
+        :param str localpath:
+        :return:
+        """
+        if self.is_dir():
+            for child in self.iterdir():
+                child.download(localpath)
+        elif self.is_file():
+            print("download file {} to {}".format(str(self), localpath+os.sep+self.name))
+
     @classmethod
     def get_file_info(cls):
         """
@@ -314,8 +326,8 @@ class VPath(object):
     def send_hash(cls, key, value):
         """
 
-        :param key: hash of Dirinfo
-        :param value:  the Dirinfo
+        :param bytes key: hash of Dirinfo
+        :param bytes value:  the Dirinfo
         :return:
         """
         cls.uploaded_index_num += 1
