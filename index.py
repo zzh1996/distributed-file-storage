@@ -68,8 +68,11 @@ def upload():
         print(remotepath, file=sys.stderr)
         print(uploadlist, file=sys.stderr)
     vp = VPath.from_full_path(remotepath)
-    vp.add(Path(p) for p in uploadlist)
-    return 'ok'
+    try:
+        vp.add(Path(p) for p in uploadlist)
+    except Exception as e:
+        return str(e)
+    return 'Upload succeeded!'
 
 
 @app.route('/download', methods=['POST'])
@@ -80,9 +83,12 @@ def download():
         print(download_list)
         print(local_root)
     vdir = VPath.from_full_path(os.path.dirname(download_list[0]))
-    for f in map(os.path.basename, download_list):
-        vdir.join(f).download(local_root)
-    return 'ok'
+    try:
+        for f in map(os.path.basename, download_list):
+            vdir.join(f).download(local_root)
+    except Exception as e:
+        return str(e)
+    return 'Download succeeded!'
 
 
 @app.route('/delete', methods=['POST'])
@@ -93,9 +99,12 @@ def delete():
         print(remotepath, file=sys.stderr)
         print(deletelist, file=sys.stderr)
     vdir = VPath.from_full_path(remotepath)
-    for f in deletelist:
-        vdir.join(f).rm()
-    return 'ok'
+    try:
+        for f in deletelist:
+            vdir.join(f).rm()
+    except Exception as e:
+        return str(e)
+    return 'Delete succeeded!'
 
 
 def commit():
@@ -108,7 +117,7 @@ def commit():
 def sync():
     t = threading.Thread(target=commit)
     t.start()
-    return 'ok'
+    return 'Syncing'
 
 
 @app.route('/status')
