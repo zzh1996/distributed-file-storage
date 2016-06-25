@@ -18,11 +18,14 @@
 {% endif %}
 
 {% if f[2]==0 %}
-  <span href="#" style="cursor:pointer" onclick=clickdir("{{f[1]}}",{{div}});>
+  <span href="#" style="max-width: 55%;cursor:pointer;text-overflow: ellipsis;display: inline-block;overflow: hidden;white-space: nowrap;"
+        onclick=clickdir("{{f[1]}}",{{div}});>
   {{ f[0] }}
   </span>
 {% else %}
+  <span style="max-width: 55%;text-overflow: ellipsis;display: inline-block;overflow: hidden;white-space: nowrap;">
   {{ f[0] }}
+  </span>
 {% endif %}
   <span class='badge'>{{ f[5] }}</span>
   <span class='badge'>{{ f[4] }}</span>

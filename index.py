@@ -154,4 +154,4 @@ def cleanup():
 
 if __name__ == '__main__':
     atexit.register(cleanup)
-    app.run(debug=True, use_reloader=False, port=8000)
+    app.run(debug=True, use_reloader=False, port=8000, threaded=True)
