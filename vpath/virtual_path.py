@@ -3,8 +3,10 @@ from pathlib import Path
 import hashlib
 import os
 import time
-
+from threading import Lock
 import functools
+
+
 @functools.total_ordering
 class VPath(object):
 
@@ -17,6 +19,7 @@ class VPath(object):
     upload_index_num = 0
     uploaded_index_num = 0
     uploading_index_name = ''
+    metadata_lock = Lock()
 
     def __init__(self, path_stack):
         """
@@ -90,11 +93,38 @@ class VPath(object):
         self = cls(path_stack)
         return self
 
+    @classmethod
+    def from_full_path(cls, path):
+        """
+
+        :param str path:
+        :return: VPath object
+        """
+        vp = cls.get_root()
+        path = path.lstrip('/')
+        return vp.join(path)
+
+    def join(self, *pathstrs):
+        """
+
+        :param [str] pathstrs:
+        :return: VPath object
+        """
+        vp = self
+        for s in pathstrs:
+            if s == '': continue
+            parts = Path(s).parts
+            if parts[0] == '/':
+                vp = VPath.get_root()
+                parts = parts[1:]
+            vp = functools.reduce(self.__truediv__, parts, vp)
+        return vp
+
     def __str__(self):
         if self.is_root():
-            return os.sep
+            return '/'
         else:
-            return os.sep.join([level[1] for level in self.path_stack])
+            return '/'.join([level[1] for level in self.path_stack])
 
     def __repr__(self):
         return 'VPath(\'{}\')'.format(self.__str__())
@@ -107,6 +137,25 @@ class VPath(object):
 
     def __lt__(self, other):
         return len(self.path_stack) < len(other.path_stack)
+
+    def __truediv__(self, other):
+        if not isinstance(other, str):
+            raise TypeError("argument should be a str")
+        elif not self.is_dir():
+            raise NotADirectoryError("{} is not a dir".format(self.name))
+        else:
+            if other == '.':
+                return self
+            if other == '..':
+                return self.parent
+            if self in self.buf_pool:
+                dirinfo = self.buf_pool[self].dirinfo
+            else:
+                dirinfo = self.get_dirinfo()
+            if other in dirinfo.content.keys():
+                return self._from_path_stack(self.path_stack + [(dirinfo.content[other], other)])
+            else:
+                raise FileNotFoundError("{} not exist".format(self.name + '/' + other))
 
     @staticmethod
     def get_hash(data):
@@ -152,25 +201,6 @@ class VPath(object):
         for name in dirinfo.content:
             yield self._from_path_stack(self.path_stack + [(dirinfo.content[name], name)])
 
-    def __truediv__(self, other):
-        if not isinstance(other, str):
-            raise TypeError("argument should be a str")
-        elif not self.is_dir():
-            raise NotADirectoryError("{} is not a dir".format(self.name))
-        else:
-            if other == '.':
-                return self
-            if other == '..':
-                return self.parent
-            if self in self.buf_pool:
-                dirinfo = self.buf_pool[self].dirinfo
-            else:
-                dirinfo = self.get_dirinfo()
-            if other in dirinfo.content.keys():
-                return self._from_path_stack(self.path_stack + [(dirinfo.content[other], other)])
-            else:
-                raise FileNotFoundError("{} not exist".format(self.name + '/' + other))
-
     def is_file(self):
         dir_entry = self.path_stack[-1][0]
         if dir_entry.type is dir_entry.FILE:
@@ -203,7 +233,9 @@ class VPath(object):
 
     @classmethod
     def reset_diff(cls):
+        cls.metadata_lock.acquire()
         cls.buf_pool.clear()
+        cls.metadata_lock.release()
 
     def add(self, new_path_set):
         """
@@ -218,6 +250,7 @@ class VPath(object):
             if not isinstance(new_path, Path):
                 raise NotImplementedError
             elif new_path.exists():
+                self.metadata_lock.acquire()
                 if self not in self.buf_pool:
                     self.buf_pool[self] = mem_buf_record(self)
 
@@ -230,6 +263,7 @@ class VPath(object):
                     entry.time = 0
                     buf_record.new_entry.add(new_path.name)
                     self.upload_file_dict[str(new_path)] = dirinfo_pb2.Entry()
+                    self.metadata_lock.release()
                 elif new_path.is_dir():
                     dir_content = list(new_path.iterdir())
                     if len(dir_content) == 0:
@@ -241,6 +275,7 @@ class VPath(object):
                     sub_dir = self/new_path.name
                     buf_record.new_entry.add(new_path.name)
                     self.buf_pool[sub_dir] = mem_buf_record()
+                    self.metadata_lock.release()
                     sub_dir.add(set(new_path.iterdir()))
             else:
                 print("{} not found, won't add".format(str(new_path)))
@@ -255,6 +290,7 @@ class VPath(object):
             del cls.buf_pool[dir_vpath]
 
     def rm(self):
+        self.metadata_lock.acquire()
         if not self.is_root():
             print("rm {}".format(str(self)))
             parent = self.parent
@@ -281,6 +317,19 @@ class VPath(object):
 
         if self.is_dir():
             self.recursive_delete_new_dir(self)
+        self.metadata_lock.release()
+
+    def download(self, localpath):
+        """
+        下载此文件/夹到一个本地目录(localpath)
+        :param str localpath:
+        :return:
+        """
+        if self.is_dir():
+            for child in self.iterdir():
+                child.download(localpath)
+        elif self.is_file():
+            print("download file {} to {}".format(str(self), localpath+os.sep+self.name))
 
     @classmethod
     def get_file_info(cls):
@@ -305,8 +354,8 @@ class VPath(object):
     def send_hash(cls, key, value):
         """
 
-        :param key: hash of Dirinfo
-        :param value:  the Dirinfo
+        :param bytes key: hash of Dirinfo
+        :param bytes value:  the Dirinfo
         :return:
         """
         cls.uploaded_index_num += 1
@@ -315,6 +364,7 @@ class VPath(object):
 
     @classmethod
     def commit(cls):
+        cls.metadata_lock.acquire()
         for dir_vpath in list(cls.buf_pool.keys()):
             while dir_vpath.parent not in cls.buf_pool:
                 cls.buf_pool[dir_vpath.parent] = mem_buf_record(dir_vpath.parent)
@@ -359,8 +409,11 @@ class VPath(object):
             cls.uploading_index_name = str(dir_vpath)
             cls.send_hash(dir_hash, serialized)
             cls.db[dir_hash] = serialized
+
         cls.buf_pool.clear()
         cls.upload_file_dict.clear()
+        cls.metadata_lock.release()
+
         cls.db.sync()
 
     @classmethod
