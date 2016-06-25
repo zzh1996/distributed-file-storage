@@ -24,9 +24,8 @@ function getremote(f) {
 }
 
 function download(evt) {
-  var download = []
-  Array.prototype.slice.call($('#remote-files .active')).forEach(function(ele) {
-    download.push(ele.getAttribute('fullpath'))
+  var download = Array.prototype.slice.call($('#remote-files .active')).map(function(ele) {
+    return ele.getAttribute('fullpath')
   })
   if (download.length > 0) {
     var dlFiles = JSON.stringify(download)
@@ -49,11 +48,9 @@ function download(evt) {
 }
 
 function upload(evt) {
-  var uploadlist = []
-  Array.prototype.slice.call($('#local-files .active')).forEach(function(ele) {
-    var path = ele.getAttribute('fullpath');
-    uploadlist.push(path);
-  });
+  var uploadlist = Array.prototype.slice.call($('#local-files .active')).map(function(e) {
+    return e.getAttribute('fullpath')
+  })
   if (uploadlist.length > 0) {
     //console.log(JSON.stringify(uploadlist));
     //console.log($('#remote-files h3').text());
@@ -108,11 +105,9 @@ function sync(evt) {
 }
 
 function deleteFiles(evt) {
-  var deletelist = [];
-  Array.prototype.slice.call($('#remote-files .active')).forEach(function(ele) {
-    var file = $.trim(ele.innerText);
-    deletelist.push(file);
-  });
+  var deletelist = Array.prototype.slice.call($('#remote-files .active')).map(function(e) {
+    return e.getAttribute('fname')
+  })
   if (deletelist.length > 0) {
     if (confirm('Are you sure to delete these files?')) {
       var remotepath = $('#remote-files h3').text();
