@@ -28,13 +28,6 @@ Path.is_new = lambda self: False
 Path.size = property(lambda self: self.stat().st_size)
 Path.time = property(lambda self: int(self.stat().st_mtime))
 
-def vpath_from_full_path(path):
-    vp = VPath.get_root()
-    for subdir in Path(path).parts[1:]:
-        if subdir:
-            vp = vp / subdir
-    return vp
-
 
 @app.route('/list')
 def list_dir():
@@ -46,7 +39,7 @@ def list_dir():
     elif request.args.get('remote_path'):
         div = 1
         arg = request.args.get('remote_path')
-        constructor = vpath_from_full_path
+        constructor = VPath.from_full_path
 
     else:
         abort(404)
@@ -74,8 +67,8 @@ def upload():
     if DEBUG:
         print(remotepath, file=sys.stderr)
         print(uploadlist, file=sys.stderr)
-    vp = vpath_from_full_path(remotepath)
-    vp.add([Path(p) for p in uploadlist])
+    vp = VPath.from_full_path(remotepath)
+    vp.add(Path(p) for p in uploadlist)
     return 'ok'
 
 
@@ -86,9 +79,9 @@ def download():
     if DEBUG:
         print(download_list)
         print(local_root)
-    vdir = vpath_from_full_path(os.path.dirname(download_list[0]))
+    vdir = VPath.from_full_path(os.path.dirname(download_list[0]))
     for f in map(os.path.basename, download_list):
-        (vdir / f).download(local_root)
+        vdir.join(f).download(local_root)
     return 'ok'
 
 
@@ -99,9 +92,9 @@ def delete():
     if DEBUG:
         print(remotepath, file=sys.stderr)
         print(deletelist, file=sys.stderr)
-    vp = vpath_from_full_path(remotepath)
+    vdir = VPath.from_full_path(remotepath)
     for f in deletelist:
-        (vp / f).rm()
+        vdir.join(f).rm()
     return 'ok'
 
 
