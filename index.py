@@ -72,6 +72,14 @@ def upload():
     return 'ok'
 
 
+@app.route('/download', methods=['POST'])
+def download():
+    download_list = json.loads(request.form['downloadlist'])
+    local_root = request.form['localpath']
+    print(download_list)
+    print(local_root)
+    return 'ok'
+
 @app.route('/delete', methods=['POST'])
 def delete():
     deletelist = json.loads(request.form['deletelist'])
