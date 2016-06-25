@@ -3,8 +3,10 @@ from pathlib import Path
 import hashlib
 import os
 import time
-
+from threading import Lock
 import functools
+
+
 @functools.total_ordering
 class VPath(object):
 
@@ -17,6 +19,7 @@ class VPath(object):
     upload_index_num = 0
     uploaded_index_num = 0
     uploading_index_name = ''
+    metadata_lock = Lock()
 
     def __init__(self, path_stack):
         """
@@ -203,7 +206,9 @@ class VPath(object):
 
     @classmethod
     def reset_diff(cls):
+        cls.metadata_lock.acquire()
         cls.buf_pool.clear()
+        cls.metadata_lock.release()
 
     def add(self, new_path_set):
         """
@@ -214,6 +219,7 @@ class VPath(object):
         """
         if not self.is_dir():
             raise NotADirectoryError
+        self.metadata_lock.acquire()
         for new_path in new_path_set:
             if not isinstance(new_path, Path):
                 raise NotImplementedError
@@ -244,6 +250,7 @@ class VPath(object):
                     sub_dir.add(set(new_path.iterdir()))
             else:
                 print("{} not found, won't add".format(str(new_path)))
+        self.metadata_lock.release()
 
     @classmethod
     def recursive_delete_new_dir(cls, dir_vpath):
@@ -255,6 +262,7 @@ class VPath(object):
             del cls.buf_pool[dir_vpath]
 
     def rm(self):
+        self.metadata_lock.acquire()
         if not self.is_root():
             print("rm {}".format(str(self)))
             parent = self.parent
@@ -281,6 +289,7 @@ class VPath(object):
 
         if self.is_dir():
             self.recursive_delete_new_dir(self)
+        self.metadata_lock.release()
 
     @classmethod
     def get_file_info(cls):
@@ -315,6 +324,7 @@ class VPath(object):
 
     @classmethod
     def commit(cls):
+        cls.metadata_lock.acquire()
         for dir_vpath in list(cls.buf_pool.keys()):
             while dir_vpath.parent not in cls.buf_pool:
                 cls.buf_pool[dir_vpath.parent] = mem_buf_record(dir_vpath.parent)
@@ -359,8 +369,11 @@ class VPath(object):
             cls.uploading_index_name = str(dir_vpath)
             cls.send_hash(dir_hash, serialized)
             cls.db[dir_hash] = serialized
+
         cls.buf_pool.clear()
         cls.upload_file_dict.clear()
+        cls.metadata_lock.release()
+
         cls.db.sync()
 
     @classmethod
