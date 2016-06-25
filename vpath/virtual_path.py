@@ -101,7 +101,24 @@ class VPath(object):
         :return: VPath object
         """
         vp = cls.get_root()
-        return vp.subitem(path)
+        path = path.lstrip('/')
+        return vp.join(path)
+
+    def join(self, *pathstrs):
+        """
+
+        :param [str] pathstrs:
+        :return: VPath object
+        """
+        vp = self
+        for s in pathstrs:
+            if s == '': continue
+            parts = Path(s).parts
+            if parts[0] == '/':
+                vp = VPath.get_root()
+                parts = parts[1:]
+            vp = functools.reduce(self.__truediv__, parts, vp)
+        return vp
 
     def __str__(self):
         if self.is_root():
@@ -120,6 +137,25 @@ class VPath(object):
 
     def __lt__(self, other):
         return len(self.path_stack) < len(other.path_stack)
+
+    def __truediv__(self, other):
+        if not isinstance(other, str):
+            raise TypeError("argument should be a str")
+        elif not self.is_dir():
+            raise NotADirectoryError("{} is not a dir".format(self.name))
+        else:
+            if other == '.':
+                return self
+            if other == '..':
+                return self.parent
+            if self in self.buf_pool:
+                dirinfo = self.buf_pool[self].dirinfo
+            else:
+                dirinfo = self.get_dirinfo()
+            if other in dirinfo.content.keys():
+                return self._from_path_stack(self.path_stack + [(dirinfo.content[other], other)])
+            else:
+                raise FileNotFoundError("{} not exist".format(self.name + '/' + other))
 
     @staticmethod
     def get_hash(data):
@@ -164,37 +200,6 @@ class VPath(object):
                 raise FileNotFoundError("index of {} not found".format(self.name))
         for name in dirinfo.content:
             yield self._from_path_stack(self.path_stack + [(dirinfo.content[name], name)])
-
-    def subitem(self, relative_path):
-        """
-
-        :param str relative_path:
-        :return: VPath object
-        """
-        vp = self
-        for subdir in relative_path.split('/')[1:]:
-            if subdir:
-                vp /= subdir
-        return vp
-
-    def __truediv__(self, other):
-        if not isinstance(other, str):
-            raise TypeError("argument should be a str")
-        elif not self.is_dir():
-            raise NotADirectoryError("{} is not a dir".format(self.name))
-        else:
-            if other == '.':
-                return self
-            if other == '..':
-                return self.parent
-            if self in self.buf_pool:
-                dirinfo = self.buf_pool[self].dirinfo
-            else:
-                dirinfo = self.get_dirinfo()
-            if other in dirinfo.content.keys():
-                return self._from_path_stack(self.path_stack + [(dirinfo.content[other], other)])
-            else:
-                raise FileNotFoundError("{} not exist".format(self.name + '/' + other))
 
     def is_file(self):
         dir_entry = self.path_stack[-1][0]
