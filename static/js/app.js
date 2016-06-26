@@ -47,6 +47,13 @@ function getgpg(f) {
   });
 }
 
+function getkeys() {
+  $.get('/listkeys', {
+  }, function(data) {
+    $('#gpg-keys').html(data);
+  });
+}
+
 function download(evt) {
   var download = Array.prototype.slice.call($('#remote-files .active')).map(function(ele) {
     return ele.getAttribute('fullpath')
@@ -118,21 +125,51 @@ function gpgsubmit(evt) {
     alert('Please select a directory instead of a file!');
   }else{
     var gpgpath=selectlist[0].getAttribute('fullpath');
+    $('#ok-btn').addClass('disabled');
+    $.post('/selectgpg', {
+      gpgpath: gpgpath
+    })
+    .done(function(data) {
+      getkeys();
+      var dialog = $('#gpgdialog');
+      dialog.modal('hide');
+      dialog = $('#keydialog');
+      dialog.modal('show');
+    })
+    .fail(function(e) {
+      alert('Failed to select gpg folder!');
+    })
+    .always(function() {
+      $('#ok-btn').removeClass('disabled');
+    })
   }
-  $('#ok-btn').addClass('disabled');
-  $.post('/selectgpg', {
-    gpgpath: gpgpath
+}
+
+function keysubmit(evt) {
+  var selectlist = Array.prototype.slice.call($('#gpg-keys .active')).map(function(e) {
+    return e;
   })
-  .done(function(data) {
-    var dialog = $('#gpgdialog');
-    dialog.modal('hide');
-  })
-  .fail(function(e) {
-    alert('Failed to select gpg folder!');
-  })
-  .always(function() {
-    $('#ok-btn').removeClass('disabled');
-  })
+  if(selectlist.length==0){
+    alert('No email selected!');
+  }else if(selectlist.length>=2){
+    alert('Please select only one email!');
+  }else{
+    var gpgemail=$(selectlist[0]).children("span").text();
+    $('#keyok-btn').addClass('disabled');
+    $.post('/selectkey', {
+      gpgemail: gpgemail
+    })
+    .done(function(data) {
+      var dialog = $('#keydialog');
+      dialog.modal('hide');
+    })
+    .fail(function(e) {
+      alert('Failed to select gpg key!');
+    })
+    .always(function() {
+      $('#keyok-btn').removeClass('disabled');
+    })
+  }
 }
 
 function sync(evt) {
@@ -224,6 +261,8 @@ $(document).ready(function() {
   $('#sync-btn').click(sync);
 
   $('#ok-btn').click(gpgsubmit);
+
+  $('#keyok-btn').click(keysubmit);
 
   if(true){
     getgpg('~');

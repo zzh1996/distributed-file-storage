@@ -1,0 +1,11 @@
+<div class="panel panel-default">
+<div class="panel-body" style="overflow-y:scroll;overflow-x:hidden;height:60vh;padding:0;">
+
+{% for e in emails %}
+<div class="list-group-item" onclick=$(this).toggleClass("active");>
+  <span style="max-width: 90%;text-overflow: ellipsis;display: inline-block;overflow: hidden;white-space: nowrap;">{{e}}</span>
+</div>
+{% endfor %}
+
+</div>
+</div>

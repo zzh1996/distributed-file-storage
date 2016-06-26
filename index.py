@@ -156,8 +156,20 @@ def status():
 
 @app.route('/selectgpg', methods=['POST'])
 def select_gpg():
-    print('GPG folder: ',request.form['gpgpath'],file=sys.stderr)
+    print('GPG folder: ',request.form['gpgpath'], file=sys.stderr)
     return ''
+
+
+@app.route('/listkeys')
+def list_keys():
+    emails = ['abc@mail.ustc.edu.cn', 'xyz@mail.ustc.edu.cn', 'someone@163.com']
+    return render_template('listkeys.html', emails=emails)
+
+@app.route('/selectkey', methods=['POST'])
+def select_key():
+    print('GPG email: ',request.form['gpgemail'],file=sys.stderr)
+    return ''
+
 
 @app.route('/')
 def index():
@@ -168,6 +180,7 @@ def cleanup():
     #db.sync()
     db.close()
     print('clean up finished')
+
 
 if __name__ == '__main__':
     atexit.register(cleanup)
