@@ -1,0 +1,10 @@
+syntax="proto3";
+
+message Blockchain{
+	bytes PK = 1;
+	bytes parent = 2;
+	bytes payload_hash = 3;
+	bytes root_hash = 4;
+	bytes sym_key = 5;
+	bytes signature = 6;
+}

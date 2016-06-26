@@ -1,0 +1,45 @@
+
+
+syntax="proto3";
+package center;
+
+option java_package = "cn.edu.ustc.center";
+option java_outer_classname = "ApiProtos";
+
+enum Type{
+	FILE_DOWNLOAD = 0;
+		// Request with the hash of file(payload[0]) and download location(path of local filesystem)(payload[1])
+		// Response, OK means download complete, ERROR means error message(string) in payload
+	INDEX_DOWNLOAD = 1;
+		// Resuest with the hash of index
+		// Response, OK means index content stored in payload, ERROR is same as above
+	FILE_UPLOAD = 2;
+		// Request with the path of the file to upload
+		// Response, OK means upload complete, FAST_FORWARD means don't need upload, file hash in payload[0]. ERROR is same as above
+	INDEX_UPLOAD = 3;
+		// Request with the hash of an index(payload[0]) and its content(in two repeated bytes)(payload[1])
+		// Response, same as above
+}
+enum Result{
+	OK = 0;
+	FAST_FORWARD = 1; // Already have the same hash
+	ERROR = 2;        // error message in payload
+}
+message FS_Request{
+	Type type = 1;
+	repeated bytes payload = 2;
+}
+
+message FS_Response{
+	Type type = 1;
+	Result result = 2;
+	repeated bytes payload = 3;
+}
+
+message BC_Request{
+
+}
+
+message BC_Response{
+
+}
