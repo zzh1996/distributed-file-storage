@@ -61,7 +61,7 @@ def list_dir():
     else:
         abort(404)
 
-    path = constructor(arg)
+    path = constructor(os.path.expanduser(arg))
     filelist = [('..', escape_backslash(path.parent), 0, False)]
     for f in path.iterdir():
         # (name, fullpath, is_file, is_new, size, mtime)

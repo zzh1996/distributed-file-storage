@@ -172,7 +172,7 @@ function deleteFiles(evt) {
 }
 
 $(document).ready(function() {
-  getlocal('/home/');
+  getlocal('~');
   getremote('/');
 
   $('#download-btn').click(download)
