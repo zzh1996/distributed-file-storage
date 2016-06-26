@@ -38,7 +38,10 @@ def sizeof_fmt(num, suffix='B'):
     return "%.1f %s%s" % (num, 'Y', suffix)
 
 def time_fmt(timestamp):
-    return datetime.datetime.fromtimestamp(timestamp).strftime('%Y-%m-%d %H:%M:%S')
+    if timestamp==0:
+        return 'Not synchronized'
+    else:
+        return datetime.datetime.fromtimestamp(timestamp).strftime('%Y-%m-%d %H:%M:%S')
 
 def escape_backslash(s):
     return str(s).replace('\\', '/')
