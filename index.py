@@ -40,6 +40,9 @@ def sizeof_fmt(num, suffix='B'):
 def time_fmt(timestamp):
     return datetime.datetime.fromtimestamp(timestamp).strftime('%Y-%m-%d %H:%M:%S')
 
+def escape_backslash(s):
+    return str(s).replace('\\', '/')
+
 @app.route('/list')
 def list_dir():
     if request.args.get('local_path'):
@@ -56,17 +59,17 @@ def list_dir():
         abort(404)
 
     path = constructor(arg)
-    filelist = [('..', str(path.parent), 0, False)]
+    filelist = [('..', escape_backslash(path.parent), 0, False)]
     for f in path.iterdir():
         # (name, fullpath, is_file, is_new, size, mtime)
         if f.is_dir():
-            filelist.append((f.name, str(f), 0, f.is_new(), sizeof_fmt(f.size), time_fmt(f.time)))
+            filelist.append((f.name, escape_backslash(f), 0, f.is_new(), sizeof_fmt(f.size), time_fmt(f.time)))
         else:
-            filelist.append((f.name, str(f), 1, f.is_new(), sizeof_fmt(f.size), time_fmt(f.time)))
+            filelist.append((f.name, escape_backslash(f), 1, f.is_new(), sizeof_fmt(f.size), time_fmt(f.time)))
     filelist.sort(key=lambda f: (f[2], f[0]))
-    curr_path = str(path)
-    if not curr_path.endswith(os.sep):
-        curr_path += os.sep
+    curr_path = escape_backslash(path)
+    if not curr_path.endswith('/'):
+        curr_path += '/'
     return render_template(
         'viewfiles.html', curr_path=curr_path, filelist=filelist, div=div)
 
