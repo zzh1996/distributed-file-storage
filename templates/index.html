@@ -40,6 +40,25 @@
   </div>
 </div>
 
+<!-- Modal -->
+<div class="modal fade" id="gpgdialog" tabindex="-1" role="dialog" aria-hidden="true" data-backdrop="static" data-keyboard="false">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+          <h2>Please select GPG folder</h2>
+      </div>
+      <div class="modal-body">
+        <div class="row">
+          <div id="gpg-files" class="list-group"></div>
+        </div>
+        <div class="row">
+          <button type="button" id="ok-btn" class="btn btn-primary col-md-2 col-md-offset-5">Select</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
 {% endblock %}
 
 {% block head %}
