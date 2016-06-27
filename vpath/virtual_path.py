@@ -1,4 +1,4 @@
-from . import dirinfo_pb2
+from protos import dirinfo_pb2
 from pathlib import Path
 import hashlib
 import os
