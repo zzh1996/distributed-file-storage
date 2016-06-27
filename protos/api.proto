@@ -43,3 +43,7 @@ message BC_Request{
 message BC_Response{
 
 }
+
+service FSService{
+	rpc FSServe(FS_Request) returns (FS_Response) {}
+}
