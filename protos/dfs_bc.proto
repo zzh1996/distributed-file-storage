@@ -1,6 +1,6 @@
 syntax="proto3";
 
-message Blockchain{
+message Block{
 	bytes PK = 1;
 	bytes parent = 2;
 	bytes payload_hash = 3;
