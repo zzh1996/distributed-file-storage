@@ -36,12 +36,27 @@ message FS_Response{
 	repeated bytes payload = 3;
 }
 
+message request_inquiry{
+	int32 height = 1;
+	bytes current_block_hash = 2;
+}
+
+message respond_inquiry{
+	int32 id = 1;
+	int32 forking = 2;
+	repeated bytes hashes = 3;
+}
+
 message BC_Request{
 
 }
 
 message BC_Response{
 
+}
+
+service BlockChain{
+	rpc receive_request_inquiry(request_inquiry) returns (respond_inquiry){}
 }
 
 service FSService{
