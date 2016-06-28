@@ -1,4 +1,5 @@
 Flask==0.10.1
 protobuf==3.0.0b3
+grpcio==0.15.0
 gnupg==2.0.2
 Flask-Bootstrap==3.3.6.0
