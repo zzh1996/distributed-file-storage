@@ -212,7 +212,6 @@ function sync(evt) {
           $('#objname').text(objname);
 
         }).fail(function(e) {
-        // FIXME
           console.dir(e)
           clearInterval(task)
           dialog.modal('hide');
@@ -220,7 +219,6 @@ function sync(evt) {
         })
       }, 500)
 
-    // FIXME
     }).fail(function() {
       showErr('Failed to sync')
     })
@@ -241,7 +239,6 @@ function deleteFiles(evt) {
       .done(function(data) {
         getremote(remotepath);
       })
-      // FIXME
       .fail(function() {
         showErr('Failed to delete')
       })
@@ -251,22 +248,22 @@ function deleteFiles(evt) {
   }
 }
 
-function loadgpg(){
-    getgpg('~');
-    var dialog = $('#gpgdialog');
-    dialog.modal('show');
+function loadgpg() {
+  getgpg('~');
+  var dialog = $('#gpgdialog');
+  dialog.modal('show');
 }
 
 function initgpg() {
-    $.post('/initgpg',{}).done(function(data){
-        if(data=='1'){
-            loadgpg();
-        }else{
-            getlocal('~');
-            getremote('/');
-            $('#buttons').show();
-        }
-    });
+  $.post('/initgpg').done(function(data) {
+    if (data == '1') {
+      loadgpg();
+    } else {
+      getlocal('~');
+      getremote('/');
+      $('#buttons').show();
+    }
+  });
 }
 
 $(document).ready(function() {
@@ -285,4 +282,9 @@ $(document).ready(function() {
   $('#loadgpg-btn').click(loadgpg);
 
   initgpg();
+
+  $('#gpg-files').click(function(e) {
+    $('#gpg-files .list-group-item').removeClass('active')
+    $(e.target).addClass('active')
+  })
 });
