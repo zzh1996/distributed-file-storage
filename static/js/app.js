@@ -164,6 +164,7 @@ function keysubmit(evt) {
       dialog.modal('hide');
       getlocal('~');
       getremote('/');
+      $('#buttons').show();
     })
     .fail(function(e) {
       alert('Failed to select gpg key!');
@@ -250,15 +251,20 @@ function deleteFiles(evt) {
   }
 }
 
+function loadgpg(){
+    getgpg('~');
+    var dialog = $('#gpgdialog');
+    dialog.modal('show');
+}
+
 function initgpg() {
     $.post('/initgpg',{}).done(function(data){
         if(data=='1'){
-            getgpg('~');
-            var dialog = $('#gpgdialog');
-            dialog.modal('show');
+            loadgpg();
         }else{
             getlocal('~');
             getremote('/');
+            $('#buttons').show();
         }
     });
 }
@@ -275,6 +281,8 @@ $(document).ready(function() {
   $('#ok-btn').click(gpgsubmit);
 
   $('#keyok-btn').click(keysubmit);
+
+  $('#loadgpg-btn').click(loadgpg);
 
   initgpg();
 });
