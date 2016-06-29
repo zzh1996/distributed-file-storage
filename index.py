@@ -13,12 +13,15 @@ import json
 import threading
 import atexit
 import datetime
+import gpg_wrapper
 
 app = Flask(__name__)
 app.config['BOOTSTRAP_SERVE_LOCAL'] = True
 
 db = dbm.open('storage.db', 'c')
 VPath.bind_to_db(db)
+gpg_key = None
+gpg_object = None
 
 Bootstrap(app)
 
@@ -72,7 +75,7 @@ def list_dir():
         # (name, fullpath, is_file, is_new, size, mtime)
         if f.is_dir():
             filelist.append((f.name, escape_backslash(f), 0, f.is_new(), sizeof_fmt(f.size), time_fmt(f.time)))
-        else:
+        elif f.is_file():
             filelist.append((f.name, escape_backslash(f), 1, f.is_new(), sizeof_fmt(f.size), time_fmt(f.time)))
     filelist.sort(key=lambda f: (f[2], f[0]))
     curr_path = escape_backslash(path)
@@ -156,18 +159,28 @@ def status():
 
 @app.route('/selectgpg', methods=['POST'])
 def select_gpg():
+    global gpg_key
     print('GPG folder: ',request.form['gpgpath'], file=sys.stderr)
+    gpg_key = gpg_wrapper.gpg_key(request.form['gpgpath'])
     return ''
 
 
 @app.route('/listkeys')
 def list_keys():
-    emails = ['abc@mail.ustc.edu.cn', 'xyz@mail.ustc.edu.cn', 'someone@163.com']
+    global gpg_key
+    if gpg_key:
+        emails = gpg_key.list_email()
+    else:
+        emails = list()
+    #emails = ['abc@mail.ustc.edu.cn', 'xyz@mail.ustc.edu.cn', 'someone@163.com']
     return render_template('listkeys.html', emails=emails)
 
 @app.route('/selectkey', methods=['POST'])
 def select_key():
+    global gpg_object
+    global gpg_key
     print('GPG email: ',request.form['gpgemail'],file=sys.stderr)
+    gpg_object = gpg_wrapper.gpg_object(gpg_key.homedir, request.form['gpgemail'], key_passphrase= None)
     return ''
 
 
