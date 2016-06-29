@@ -1,3 +1,5 @@
+from __future__ import division
+
 import sys
 sys.path.append('protos')
 import dfs_bc_pb2, api_pb2
@@ -5,6 +7,9 @@ import gpg_wrapper
 from grpc.beta import implementations
 import hashlib
 from threading import Lock
+from concurrent.futures import ThreadPoolExecutor
+from math import ceil
+from functools import reduce
 
 class blockchain(api_pb2.BetaBlockChainServicer):
     db_lock = Lock()
@@ -31,9 +36,40 @@ class blockchain(api_pb2.BetaBlockChainServicer):
 
         :return: bytes request_inquiry
         """
+        def _cmp(x, y):
+            if not x:
+                return False
+            if x.hashes == y.hashes:
+                return x
+            else:
+                return False
+
         request_inquiry = api_pb2.request_inquiry()
         request_inquiry.height = self.height
         request_inquiry.current_block_hash = self.current_block_hash
+
+        res = self.stub.request_inquiry_forward(request_inquiry)
+        if len(res) < 1:
+            raise ValueError("No Response")
+
+        max_len = max(map(lambda x: len(x.hashes), res))
+        q = list(filter(lambda x: len(x.hashes) == max_len, res))
+        if len(q) == 1:
+            equal = True
+        else:
+            equal = reduce(q, _cmp)
+        with ThreadPoolExecutor(max_workers=4) as executor:
+            if not equal:
+                executor.submit(self.send_sync, q[0].id, q[0].hashes)
+                pass
+            else:
+                start = 0
+                l = ceil(max_len / len(q))
+                for res in q:
+                    executor.submit(self.send_sync, res.id, res.hashes[start:start+l])
+                    start += l
+            executor.shutdown(wait=True)
+
         return request_inquiry
 
     def receive_request_inquiry(self, request_inquiry, context):
