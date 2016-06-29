@@ -99,6 +99,23 @@ class blockchain(api_pb2.BetaBlockChainServicer):
 
     #def propel_block(self, block):
 
+    def send_sync_req(self, id, hashes):
+
+        req = api_pb2.request_sync()
+        req.id = id
+        req.hashes = hashes
+        ch = implementations.insecure_channel('localhost', self.port)
+        stub = api_pb2.beta_create_JavaForward_stub(ch)
+        return stub.request_syn_forward(req)
+
+    def receive_request_syn(self, req):
+
+        res = api_pb2.response_syn()
+        for h in req.hashes:
+            res.hash = h;
+            res.block = self.db[h].SerializeToString()
+            yield res
+
 def serve():
     import time, os
     server = api_pb2.beta_create_BlockChain_server(blockchain)
