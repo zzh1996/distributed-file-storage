@@ -8,6 +8,9 @@ function clickdir(f, div) {
     case 1:
       getremote(f);
       break;
+    case 2:
+      getgpg(f);
+      break;
   }
 }
 
@@ -15,7 +18,7 @@ function showErr(e) {
   var msg = '\
   <div class="alert alert-danger">\
     <a href="#" class="close" data-dismiss="alert" aria-label="close">&times;</a>\
-      <strong>Error!</strong>' + e +
+      <strong>Error!</strong> ' + e +
   '</div>'
   $('.container').prepend(msg)
 }
@@ -33,6 +36,21 @@ function getremote(f) {
     remote_path: f
   }, function(data) {
     $('#remote-files').html(data);
+  });
+}
+
+function getgpg(f) {
+  $.get('/list', {
+    gpg_path: f
+  }, function(data) {
+    $('#gpg-files').html(data);
+  });
+}
+
+function getkeys() {
+  $.get('/listkeys', {
+  }, function(data) {
+    $('#gpg-keys').html(data);
   });
 }
 
@@ -92,6 +110,65 @@ function upload(evt) {
     })
   } else {
     alert('Please select files!');
+  }
+}
+
+function gpgsubmit(evt) {
+  var selectlist = Array.prototype.slice.call($('#gpg-files .active')).map(function(e) {
+    return e;
+  })
+  if(selectlist.length==0){
+    alert('No directory selected!');
+  }else if(selectlist.length>=2){
+    alert('Please select only one directory!');
+  }else if(selectlist[0].getAttribute('isfile')==1){
+    alert('Please select a directory instead of a file!');
+  }else{
+    var gpgpath=selectlist[0].getAttribute('fullpath');
+    $('#ok-btn').addClass('disabled');
+    $.post('/selectgpg', {
+      gpgpath: gpgpath
+    })
+    .done(function(data) {
+      getkeys();
+      var dialog = $('#gpgdialog');
+      dialog.modal('hide');
+      dialog = $('#keydialog');
+      dialog.modal('show');
+    })
+    .fail(function(e) {
+      alert('Failed to select gpg folder!');
+    })
+    .always(function() {
+      $('#ok-btn').removeClass('disabled');
+    })
+  }
+}
+
+function keysubmit(evt) {
+  var selectlist = Array.prototype.slice.call($('#gpg-keys .active')).map(function(e) {
+    return e;
+  })
+  if(selectlist.length==0){
+    alert('No email selected!');
+  }else if(selectlist.length>=2){
+    alert('Please select only one email!');
+  }else{
+    var gpgemail=$(selectlist[0]).children("span").text();
+    $('#keyok-btn').addClass('disabled');
+    $.post('/selectkey', {
+      gpgemail: gpgemail
+    })
+    .done(function(data) {
+      var dialog = $('#keydialog');
+      dialog.modal('hide');
+    })
+    .fail(function(e) {
+      alert('Failed to select gpg key!');
+    })
+    .always(function() {
+      $('#keyok-btn').removeClass('disabled');
+    })
   }
 }
 
@@ -183,5 +260,14 @@ $(document).ready(function() {
 
   $('#sync-btn').click(sync);
 
+  $('#ok-btn').click(gpgsubmit);
+
+  $('#keyok-btn').click(keysubmit);
+
+  if(true){
+    getgpg('~');
+    var dialog = $('#gpgdialog');
+    dialog.modal('show');
+  }
 
 });

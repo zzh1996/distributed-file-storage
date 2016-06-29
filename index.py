@@ -58,6 +58,11 @@ def list_dir():
         arg = request.args.get('remote_path')
         constructor = VPath.from_full_path
 
+    elif request.args.get('gpg_path'):
+        div = 2
+        arg = request.args.get('gpg_path')
+        constructor = Path
+
     else:
         abort(404)
 
@@ -73,8 +78,9 @@ def list_dir():
     curr_path = escape_backslash(path)
     if not curr_path.endswith('/'):
         curr_path += '/'
+    height = 60 if div == 2 else 80
     return render_template(
-        'viewfiles.html', curr_path=curr_path, filelist=filelist, div=div)
+        'viewfiles.html', curr_path=curr_path, filelist=filelist, div=div, height=height)
 
 
 @app.route('/upload', methods=['POST'])
@@ -148,6 +154,23 @@ def status():
         "uploading_index_name": VPath.uploading_index_name})
 
 
+@app.route('/selectgpg', methods=['POST'])
+def select_gpg():
+    print('GPG folder: ',request.form['gpgpath'], file=sys.stderr)
+    return ''
+
+
+@app.route('/listkeys')
+def list_keys():
+    emails = ['abc@mail.ustc.edu.cn', 'xyz@mail.ustc.edu.cn', 'someone@163.com']
+    return render_template('listkeys.html', emails=emails)
+
+@app.route('/selectkey', methods=['POST'])
+def select_key():
+    print('GPG email: ',request.form['gpgemail'],file=sys.stderr)
+    return ''
+
+
 @app.route('/')
 def index():
     return render_template('index.html')
@@ -157,6 +180,7 @@ def cleanup():
     #db.sync()
     db.close()
     print('clean up finished')
+
 
 if __name__ == '__main__':
     atexit.register(cleanup)
