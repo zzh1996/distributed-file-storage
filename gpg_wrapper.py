@@ -5,7 +5,6 @@ import os
 import re
 import pprint
 
-
 class gpg_key(object):
     def __init__(self, homedir):
         self.homedir = homedir.rstrip('/')
@@ -14,7 +13,6 @@ class gpg_key(object):
         else:
             keyring = 'pubring.gpg'
         self.gpg = gnupg.GPG(homedir= homedir, keyring=keyring)
-
 
     def generate_key(self, input_data):
         """
@@ -97,6 +95,15 @@ class gpg_object(object):
         for item in pubkeys:
             if self.email_address in item['uids'][0]:
                 return item['fingerprint']
+
+    def verify_passphrase(self):
+        message = str.encode(gnupg._util._make_random_string(32))
+        en_message = self.encrypt_assym_message(message)
+        de_message = self.decrypt_assym_message(en_message)
+        if de_message == b'':
+            return False
+        else:
+            return True
 
     def encrypt_sym_message(self, message, passphrase):
         """
