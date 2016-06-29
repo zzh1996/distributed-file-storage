@@ -20,7 +20,7 @@ DESCRIPTOR = _descriptor.FileDescriptor(
   name='api.proto',
   package='center',
   syntax='proto3',
-  serialized_pb=_b('\n\tapi.proto\x12\x06\x63\x65nter\"9\n\nFS_Request\x12\x1a\n\x04type\x18\x01 \x01(\x0e\x32\x0c.center.Type\x12\x0f\n\x07payload\x18\x02 \x03(\x0c\"Z\n\x0b\x46S_Response\x12\x1a\n\x04type\x18\x01 \x01(\x0e\x32\x0c.center.Type\x12\x1e\n\x06result\x18\x02 \x01(\x0e\x32\x0e.center.Result\x12\x0f\n\x07payload\x18\x03 \x03(\x0c\"=\n\x0frequest_inquiry\x12\x0e\n\x06height\x18\x01 \x01(\x05\x12\x1a\n\x12\x63urrent_block_hash\x18\x02 \x01(\x0c\">\n\x0frespond_inquiry\x12\n\n\x02id\x18\x01 \x01(\x05\x12\x0f\n\x07\x66orking\x18\x02 \x01(\x08\x12\x0e\n\x06hashes\x18\x03 \x03(\x0c\")\n\x0brequest_syn\x12\n\n\x02id\x18\x01 \x01(\x05\x12\x0e\n\x06hashes\x18\x02 \x03(\x0c\"+\n\x0cresponse_syn\x12\x0c\n\x04hash\x18\x01 \x01(\x0c\x12\r\n\x05\x62lock\x18\x02 \x01(\x0c*P\n\x04Type\x12\x11\n\rFILE_DOWNLOAD\x10\x00\x12\x12\n\x0eINDEX_DOWNLOAD\x10\x01\x12\x0f\n\x0b\x46ILE_UPLOAD\x10\x02\x12\x10\n\x0cINDEX_UPLOAD\x10\x03*-\n\x06Result\x12\x06\n\x02OK\x10\x00\x12\x10\n\x0c\x46\x41ST_FORWARD\x10\x01\x12\t\n\x05\x45RROR\x10\x02\x32\xa1\x01\n\nBlockChain\x12M\n\x17receive_request_inquiry\x12\x17.center.request_inquiry\x1a\x17.center.respond_inquiry\"\x00\x12\x44\n\x13receive_request_syn\x12\x13.center.request_syn\x1a\x14.center.response_syn\"\x00\x30\x01\x32\xa4\x01\n\x0bJavaForward\x12O\n\x17request_inquiry_forward\x12\x17.center.request_inquiry\x1a\x17.center.respond_inquiry\"\x00\x30\x01\x12\x44\n\x13request_syn_forward\x12\x13.center.request_syn\x1a\x14.center.response_syn\"\x00\x30\x01\x32\x41\n\tFSService\x12\x34\n\x07\x46SServe\x12\x12.center.FS_Request\x1a\x13.center.FS_Response\"\x00\x42\x1f\n\x12\x63n.edu.ustc.centerB\tApiProtosb\x06proto3')
+  serialized_pb=_b('\n\tapi.proto\x12\x06\x63\x65nter\"9\n\nFS_Request\x12\x1a\n\x04type\x18\x01 \x01(\x0e\x32\x0c.center.Type\x12\x0f\n\x07payload\x18\x02 \x03(\x0c\"Z\n\x0b\x46S_Response\x12\x1a\n\x04type\x18\x01 \x01(\x0e\x32\x0c.center.Type\x12\x1e\n\x06result\x18\x02 \x01(\x0e\x32\x0e.center.Result\x12\x0f\n\x07payload\x18\x03 \x03(\x0c\"=\n\x0frequest_inquiry\x12\x0e\n\x06height\x18\x01 \x01(\x05\x12\x1a\n\x12\x63urrent_block_hash\x18\x02 \x01(\x0c\">\n\x0frespond_inquiry\x12\n\n\x02id\x18\x01 \x01(\t\x12\x0f\n\x07\x66orking\x18\x02 \x01(\x08\x12\x0e\n\x06hashes\x18\x03 \x03(\x0c\")\n\x0brequest_syn\x12\n\n\x02id\x18\x01 \x01(\t\x12\x0e\n\x06hashes\x18\x02 \x03(\x0c\"+\n\x0cresponse_syn\x12\x0c\n\x04hash\x18\x01 \x01(\x0c\x12\r\n\x05\x62lock\x18\x02 \x01(\x0c*P\n\x04Type\x12\x11\n\rFILE_DOWNLOAD\x10\x00\x12\x12\n\x0eINDEX_DOWNLOAD\x10\x01\x12\x0f\n\x0b\x46ILE_UPLOAD\x10\x02\x12\x10\n\x0cINDEX_UPLOAD\x10\x03*-\n\x06Result\x12\x06\n\x02OK\x10\x00\x12\x10\n\x0c\x46\x41ST_FORWARD\x10\x01\x12\t\n\x05\x45RROR\x10\x02\x32\xa1\x01\n\nBlockChain\x12M\n\x17receive_request_inquiry\x12\x17.center.request_inquiry\x1a\x17.center.respond_inquiry\"\x00\x12\x44\n\x13receive_request_syn\x12\x13.center.request_syn\x1a\x14.center.response_syn\"\x00\x30\x01\x32\xa4\x01\n\x0bJavaForward\x12O\n\x17request_inquiry_forward\x12\x17.center.request_inquiry\x1a\x17.center.respond_inquiry\"\x00\x30\x01\x12\x44\n\x13request_syn_forward\x12\x13.center.request_syn\x1a\x14.center.response_syn\"\x00\x30\x01\x32\x41\n\tFSService\x12\x34\n\x07\x46SServe\x12\x12.center.FS_Request\x1a\x13.center.FS_Response\"\x00\x42\x1f\n\x12\x63n.edu.ustc.centerB\tApiProtosb\x06proto3')
 )
 _sym_db.RegisterFileDescriptor(DESCRIPTOR)
 
@@ -222,8 +222,8 @@ _RESPOND_INQUIRY = _descriptor.Descriptor(
   fields=[
     _descriptor.FieldDescriptor(
       name='id', full_name='center.respond_inquiry.id', index=0,
-      number=1, type=5, cpp_type=1, label=1,
-      has_default_value=False, default_value=0,
+      number=1, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       options=None),
@@ -267,8 +267,8 @@ _REQUEST_SYN = _descriptor.Descriptor(
   fields=[
     _descriptor.FieldDescriptor(
       name='id', full_name='center.request_syn.id', index=0,
-      number=1, type=5, cpp_type=1, label=1,
-      has_default_value=False, default_value=0,
+      number=1, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       options=None),

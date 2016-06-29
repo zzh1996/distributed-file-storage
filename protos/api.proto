@@ -40,13 +40,13 @@ message request_inquiry{
 }
 
 message respond_inquiry{
-	int32 id = 1;
+	string id = 1;
 	bool forking = 2;
 	repeated bytes hashes = 3;
 }
 
 message request_syn{
-	int32 id = 1;
+	string id = 1;
 	repeated bytes hashes = 2;
 }
 
