@@ -41,20 +41,36 @@ message request_inquiry{
 
 message respond_inquiry{
 	int32 id = 1;
-	int32 forking = 2;
+	bool forking = 2;
 	repeated bytes hashes = 3;
 }
 
-message BC_Request{
-
+message request_syn{
+	int32 id = 1;
+	repeated bytes hashes = 2;
 }
 
-message BC_Response{
-
+message response_syn{
+	bytes hash = 1;
+	bytes block = 2;
 }
 
+
+/*
+说明：
+receive_request_inquiry是第一种需要广播的模型
+	调用过程是 发起请求的python端构造request_inquiry, 调用JavaForward的reques_inquiry_forward, java传给对面的java之后，java调用BlockChain的receive_request_inquiry, python会返回一个respond_inquiry，其中id是无效的，java接收到之后要补上id，回复给请求端的java。再之后，请求端的java要把广播得到的回复放到一个队列里，通过stream response的方式返回给python.
+receive_request_syn是第二种指定连接对象的模型
+	调用过程是 发起请求的python端构造request_syn, 调用JavaForward的request_syn_forward, java根据request的id域指示连接指定的java, 对面的java再调用BlockChain的receive_request_syn, 返回一个stream的response_syn, 最后java负责传递stream的response到请求端的python.
+*/
 service BlockChain{
 	rpc receive_request_inquiry(request_inquiry) returns (respond_inquiry){}
+	rpc receive_request_syn(request_syn) returns (stream response_syn){} // response from python only contains forking and hashes, id is nonsense
+}
+
+service JavaForward{
+	rpc request_inquiry_forward(request_inquiry) returns (stream respond_inquiry) {} // stream by java, need to complete id
+	rpc request_syn_forward(request_syn) returns (stream response_syn){} // stream by python, forward by java
 }
 
 service FSService{
