@@ -2,13 +2,19 @@ import gnupg
 import tempfile
 import io
 import os
+import re
 import pprint
 
 
 class gpg_key(object):
     def __init__(self, homedir):
-        self.homedir = homedir
-        self.gpg = gnupg.GPG(homedir= homedir)
+        self.homedir = homedir.rstrip('/')
+        if os.path.exists(homedir + '/pubring.kbx'):
+            keyring = 'pubring.kbx'
+        else:
+            keyring = 'pubring.gpg'
+        self.gpg = gnupg.GPG(homedir= homedir, keyring=keyring)
+
 
     def generate_key(self, input_data):
         """
@@ -39,6 +45,14 @@ class gpg_key(object):
             if email_address in item['uids'][0]:
                 return item['fingerprint']
 
+    def list_email(self):
+        pubkeys = self.gpg.list_keys()
+        emails = list()
+        for item in pubkeys:
+            emails.append(re.search(r'<(.*@.*)>', item['uids'][0]).group(1))
+        return emails
+
+
     def list_public_keys(self):
         pprint.pprint(self.gpg.list_keys())
 
@@ -64,10 +78,14 @@ class gpg_key(object):
 
 class gpg_object(object):
     def __init__(self, homedir, email_address, key_passphrase):
-        self.homedir = homedir
         self.email_address = email_address
-        self.key_passphrase= key_passphrase
-        self.gpg = gnupg.GPG(homedir=self.homedir)
+        self.key_passphrase = key_passphrase
+        self.homedir = homedir.rstrip('/')
+        if os.path.exists(homedir + '/pubring.kbx'):
+            keyring = 'pubring.kbx'
+        else:
+            keyring = 'pubring.gpg'
+        self.gpg = gnupg.GPG(homedir= homedir, keyring=keyring)
         self.fingerprint= self.import_keyid_fingerprint()
 
     def import_keyid_fingerprint(self):
