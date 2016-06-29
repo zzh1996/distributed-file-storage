@@ -14,14 +14,17 @@ import threading
 import atexit
 import datetime
 import gpg_wrapper
+import gpgconfig
 
 app = Flask(__name__)
 app.config['BOOTSTRAP_SERVE_LOCAL'] = True
 
 db = dbm.open('storage.db', 'c')
 VPath.bind_to_db(db)
+gpg_path = None
 gpg_key = None
 gpg_object = None
+gpg_config = gpgconfig.gpg_config()
 
 Bootstrap(app)
 
@@ -34,20 +37,23 @@ Path.time = property(lambda self: int(self.stat().st_mtime))
 
 
 def sizeof_fmt(num, suffix='B'):
-    for unit in ['','K','M','G','T','P','E','Z']:
+    for unit in ['', 'K', 'M', 'G', 'T', 'P', 'E', 'Z']:
         if abs(num) < 1024.0:
             return "%3.1f %s%s" % (num, unit, suffix)
         num /= 1024.0
     return "%.1f %s%s" % (num, 'Y', suffix)
 
+
 def time_fmt(timestamp):
-    if timestamp==0:
+    if timestamp == 0:
         return 'Not synchronized'
     else:
         return datetime.datetime.fromtimestamp(timestamp).strftime('%Y-%m-%d %H:%M:%S')
 
+
 def escape_backslash(s):
     return str(s).replace('\\', '/')
+
 
 @app.route('/list')
 def list_dir():
@@ -157,11 +163,24 @@ def status():
         "uploading_index_name": VPath.uploading_index_name})
 
 
+def set_gpg_path(path):
+    global gpg_path
+    global gpg_key
+    gpg_key = gpg_wrapper.gpg_key(path)
+    gpg_path = path
+    print('GPG folder: ', path, file=sys.stderr)
+
+
+def set_gpg_email(email):
+    global gpg_object
+    global gpg_key
+    gpg_object = gpg_wrapper.gpg_object(gpg_key.homedir, email, key_passphrase=None)
+    print('GPG email: ', email, file=sys.stderr)
+
+
 @app.route('/selectgpg', methods=['POST'])
 def select_gpg():
-    global gpg_key
-    print('GPG folder: ',request.form['gpgpath'], file=sys.stderr)
-    gpg_key = gpg_wrapper.gpg_key(request.form['gpgpath'])
+    set_gpg_path(request.form['gpgpath'])
     return ''
 
 
@@ -172,16 +191,26 @@ def list_keys():
         emails = gpg_key.list_email()
     else:
         emails = list()
-    #emails = ['abc@mail.ustc.edu.cn', 'xyz@mail.ustc.edu.cn', 'someone@163.com']
+    # emails = ['abc@mail.ustc.edu.cn', 'xyz@mail.ustc.edu.cn', 'someone@163.com']
     return render_template('listkeys.html', emails=emails)
+
 
 @app.route('/selectkey', methods=['POST'])
 def select_key():
-    global gpg_object
-    global gpg_key
-    print('GPG email: ',request.form['gpgemail'],file=sys.stderr)
-    gpg_object = gpg_wrapper.gpg_object(gpg_key.homedir, request.form['gpgemail'], key_passphrase= None)
+    set_gpg_email(request.form['gpgemail'])
+    gpg_config.set(gpg_path, request.form['gpgemail'])
     return ''
+
+
+@app.route('/initgpg', methods=['POST'])
+def init_gpg():
+    if gpg_config.exist():
+        path, email = gpg_config.get()
+        set_gpg_path(path)
+        set_gpg_email(email)
+        return '0'
+    else:
+        return '1'
 
 
 @app.route('/')
@@ -190,7 +219,7 @@ def index():
 
 
 def cleanup():
-    #db.sync()
+    # db.sync()
     db.close()
     print('clean up finished')
 

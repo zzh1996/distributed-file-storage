@@ -1,4 +1,5 @@
 storage.db.*
+gpg.config
 
 *.swp
 *.[oa]
