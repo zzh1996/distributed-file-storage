@@ -17,6 +17,8 @@ enum Type{
 	INDEX_UPLOAD = 3;
 		// Request with the hash of an index(payload[0]) and its content(in two repeated bytes)(payload[1])
 		// Response, same as above
+	EXIT = 4;
+		// Tell Java to Terminate
 }
 enum Result{
 	OK = 0;
@@ -60,7 +62,7 @@ message request_push{
 }
 
 message response_push{
-	int32 id = 1;
+	string id = 1;
 	bool confirm = 2;
 }
 

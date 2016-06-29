@@ -2,166 +2,170 @@
 # source: dirinfo.proto
 
 import sys
-
-_b = sys.version_info[0] < 3 and (lambda x: x) or (lambda x: x.encode('latin1'))
+_b=sys.version_info[0]<3 and (lambda x:x) or (lambda x:x.encode('latin1'))
 from google.protobuf import descriptor as _descriptor
 from google.protobuf import message as _message
 from google.protobuf import reflection as _reflection
 from google.protobuf import symbol_database as _symbol_database
 from google.protobuf import descriptor_pb2
-
 # @@protoc_insertion_point(imports)
 
 _sym_db = _symbol_database.Default()
 
+
+
+
 DESCRIPTOR = _descriptor.FileDescriptor(
-    name='dirinfo.proto',
-    package='dfs',
-    syntax='proto3',
-    serialized_pb=_b(
-        '\n\rdirinfo.proto\x12\x03\x64\x66s\"k\n\x05\x45ntry\x12\x0c\n\x04size\x18\x02 \x01(\x04\x12\x0c\n\x04time\x18\x03 \x01(\x04\x12\x0c\n\x04hash\x18\x04 \x01(\x0c\x12\x1d\n\x04type\x18\x05 \x01(\x0e\x32\x0f.dfs.Entry.Type\"\x19\n\x04Type\x12\x08\n\x04\x46ILE\x10\x00\x12\x07\n\x03\x44IR\x10\x01\"q\n\x07\x44irInfo\x12*\n\x07\x63ontent\x18\x01 \x03(\x0b\x32\x19.dfs.DirInfo.ContentEntry\x1a:\n\x0c\x43ontentEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\x19\n\x05value\x18\x02 \x01(\x0b\x32\n.dfs.Entry:\x02\x38\x01\x62\x06proto3')
+  name='dirinfo.proto',
+  package='dfs',
+  syntax='proto3',
+  serialized_pb=_b('\n\rdirinfo.proto\x12\x03\x64\x66s\"k\n\x05\x45ntry\x12\x0c\n\x04size\x18\x02 \x01(\x04\x12\x0c\n\x04time\x18\x03 \x01(\x04\x12\x0c\n\x04hash\x18\x04 \x01(\x0c\x12\x1d\n\x04type\x18\x05 \x01(\x0e\x32\x0f.dfs.Entry.Type\"\x19\n\x04Type\x12\x08\n\x04\x46ILE\x10\x00\x12\x07\n\x03\x44IR\x10\x01\"q\n\x07\x44irInfo\x12*\n\x07\x63ontent\x18\x01 \x03(\x0b\x32\x19.dfs.DirInfo.ContentEntry\x1a:\n\x0c\x43ontentEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\x19\n\x05value\x18\x02 \x01(\x0b\x32\n.dfs.Entry:\x02\x38\x01\x62\x06proto3')
 )
 _sym_db.RegisterFileDescriptor(DESCRIPTOR)
 
+
+
 _ENTRY_TYPE = _descriptor.EnumDescriptor(
-    name='Type',
-    full_name='dfs.Entry.Type',
-    filename=None,
-    file=DESCRIPTOR,
-    values=[
-        _descriptor.EnumValueDescriptor(
-            name='FILE', index=0, number=0,
-            options=None,
-            type=None),
-        _descriptor.EnumValueDescriptor(
-            name='DIR', index=1, number=1,
-            options=None,
-            type=None),
-    ],
-    containing_type=None,
-    options=None,
-    serialized_start=104,
-    serialized_end=129,
+  name='Type',
+  full_name='dfs.Entry.Type',
+  filename=None,
+  file=DESCRIPTOR,
+  values=[
+    _descriptor.EnumValueDescriptor(
+      name='FILE', index=0, number=0,
+      options=None,
+      type=None),
+    _descriptor.EnumValueDescriptor(
+      name='DIR', index=1, number=1,
+      options=None,
+      type=None),
+  ],
+  containing_type=None,
+  options=None,
+  serialized_start=104,
+  serialized_end=129,
 )
 _sym_db.RegisterEnumDescriptor(_ENTRY_TYPE)
 
+
 _ENTRY = _descriptor.Descriptor(
-    name='Entry',
-    full_name='dfs.Entry',
-    filename=None,
-    file=DESCRIPTOR,
-    containing_type=None,
-    fields=[
-        _descriptor.FieldDescriptor(
-            name='size', full_name='dfs.Entry.size', index=0,
-            number=2, type=4, cpp_type=4, label=1,
-            has_default_value=False, default_value=0,
-            message_type=None, enum_type=None, containing_type=None,
-            is_extension=False, extension_scope=None,
-            options=None),
-        _descriptor.FieldDescriptor(
-            name='time', full_name='dfs.Entry.time', index=1,
-            number=3, type=4, cpp_type=4, label=1,
-            has_default_value=False, default_value=0,
-            message_type=None, enum_type=None, containing_type=None,
-            is_extension=False, extension_scope=None,
-            options=None),
-        _descriptor.FieldDescriptor(
-            name='hash', full_name='dfs.Entry.hash', index=2,
-            number=4, type=12, cpp_type=9, label=1,
-            has_default_value=False, default_value=_b(""),
-            message_type=None, enum_type=None, containing_type=None,
-            is_extension=False, extension_scope=None,
-            options=None),
-        _descriptor.FieldDescriptor(
-            name='type', full_name='dfs.Entry.type', index=3,
-            number=5, type=14, cpp_type=8, label=1,
-            has_default_value=False, default_value=0,
-            message_type=None, enum_type=None, containing_type=None,
-            is_extension=False, extension_scope=None,
-            options=None),
-    ],
-    extensions=[
-    ],
-    nested_types=[],
-    enum_types=[
-        _ENTRY_TYPE,
-    ],
-    options=None,
-    is_extendable=False,
-    syntax='proto3',
-    extension_ranges=[],
-    oneofs=[
-    ],
-    serialized_start=22,
-    serialized_end=129,
+  name='Entry',
+  full_name='dfs.Entry',
+  filename=None,
+  file=DESCRIPTOR,
+  containing_type=None,
+  fields=[
+    _descriptor.FieldDescriptor(
+      name='size', full_name='dfs.Entry.size', index=0,
+      number=2, type=4, cpp_type=4, label=1,
+      has_default_value=False, default_value=0,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      options=None),
+    _descriptor.FieldDescriptor(
+      name='time', full_name='dfs.Entry.time', index=1,
+      number=3, type=4, cpp_type=4, label=1,
+      has_default_value=False, default_value=0,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      options=None),
+    _descriptor.FieldDescriptor(
+      name='hash', full_name='dfs.Entry.hash', index=2,
+      number=4, type=12, cpp_type=9, label=1,
+      has_default_value=False, default_value=_b(""),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      options=None),
+    _descriptor.FieldDescriptor(
+      name='type', full_name='dfs.Entry.type', index=3,
+      number=5, type=14, cpp_type=8, label=1,
+      has_default_value=False, default_value=0,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      options=None),
+  ],
+  extensions=[
+  ],
+  nested_types=[],
+  enum_types=[
+    _ENTRY_TYPE,
+  ],
+  options=None,
+  is_extendable=False,
+  syntax='proto3',
+  extension_ranges=[],
+  oneofs=[
+  ],
+  serialized_start=22,
+  serialized_end=129,
 )
 
+
 _DIRINFO_CONTENTENTRY = _descriptor.Descriptor(
-    name='ContentEntry',
-    full_name='dfs.DirInfo.ContentEntry',
-    filename=None,
-    file=DESCRIPTOR,
-    containing_type=None,
-    fields=[
-        _descriptor.FieldDescriptor(
-            name='key', full_name='dfs.DirInfo.ContentEntry.key', index=0,
-            number=1, type=9, cpp_type=9, label=1,
-            has_default_value=False, default_value=_b("").decode('utf-8'),
-            message_type=None, enum_type=None, containing_type=None,
-            is_extension=False, extension_scope=None,
-            options=None),
-        _descriptor.FieldDescriptor(
-            name='value', full_name='dfs.DirInfo.ContentEntry.value', index=1,
-            number=2, type=11, cpp_type=10, label=1,
-            has_default_value=False, default_value=None,
-            message_type=None, enum_type=None, containing_type=None,
-            is_extension=False, extension_scope=None,
-            options=None),
-    ],
-    extensions=[
-    ],
-    nested_types=[],
-    enum_types=[
-    ],
-    options=_descriptor._ParseOptions(descriptor_pb2.MessageOptions(), _b('8\001')),
-    is_extendable=False,
-    syntax='proto3',
-    extension_ranges=[],
-    oneofs=[
-    ],
-    serialized_start=186,
-    serialized_end=244,
+  name='ContentEntry',
+  full_name='dfs.DirInfo.ContentEntry',
+  filename=None,
+  file=DESCRIPTOR,
+  containing_type=None,
+  fields=[
+    _descriptor.FieldDescriptor(
+      name='key', full_name='dfs.DirInfo.ContentEntry.key', index=0,
+      number=1, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=_b("").decode('utf-8'),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      options=None),
+    _descriptor.FieldDescriptor(
+      name='value', full_name='dfs.DirInfo.ContentEntry.value', index=1,
+      number=2, type=11, cpp_type=10, label=1,
+      has_default_value=False, default_value=None,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      options=None),
+  ],
+  extensions=[
+  ],
+  nested_types=[],
+  enum_types=[
+  ],
+  options=_descriptor._ParseOptions(descriptor_pb2.MessageOptions(), _b('8\001')),
+  is_extendable=False,
+  syntax='proto3',
+  extension_ranges=[],
+  oneofs=[
+  ],
+  serialized_start=186,
+  serialized_end=244,
 )
 
 _DIRINFO = _descriptor.Descriptor(
-    name='DirInfo',
-    full_name='dfs.DirInfo',
-    filename=None,
-    file=DESCRIPTOR,
-    containing_type=None,
-    fields=[
-        _descriptor.FieldDescriptor(
-            name='content', full_name='dfs.DirInfo.content', index=0,
-            number=1, type=11, cpp_type=10, label=3,
-            has_default_value=False, default_value=[],
-            message_type=None, enum_type=None, containing_type=None,
-            is_extension=False, extension_scope=None,
-            options=None),
-    ],
-    extensions=[
-    ],
-    nested_types=[_DIRINFO_CONTENTENTRY, ],
-    enum_types=[
-    ],
-    options=None,
-    is_extendable=False,
-    syntax='proto3',
-    extension_ranges=[],
-    oneofs=[
-    ],
-    serialized_start=131,
-    serialized_end=244,
+  name='DirInfo',
+  full_name='dfs.DirInfo',
+  filename=None,
+  file=DESCRIPTOR,
+  containing_type=None,
+  fields=[
+    _descriptor.FieldDescriptor(
+      name='content', full_name='dfs.DirInfo.content', index=0,
+      number=1, type=11, cpp_type=10, label=3,
+      has_default_value=False, default_value=[],
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      options=None),
+  ],
+  extensions=[
+  ],
+  nested_types=[_DIRINFO_CONTENTENTRY, ],
+  enum_types=[
+  ],
+  options=None,
+  is_extendable=False,
+  syntax='proto3',
+  extension_ranges=[],
+  oneofs=[
+  ],
+  serialized_start=131,
+  serialized_end=244,
 )
 
 _ENTRY.fields_by_name['type'].enum_type = _ENTRY_TYPE
@@ -173,26 +177,27 @@ DESCRIPTOR.message_types_by_name['Entry'] = _ENTRY
 DESCRIPTOR.message_types_by_name['DirInfo'] = _DIRINFO
 
 Entry = _reflection.GeneratedProtocolMessageType('Entry', (_message.Message,), dict(
-    DESCRIPTOR=_ENTRY,
-    __module__='dirinfo_pb2'
-    # @@protoc_insertion_point(class_scope:dfs.Entry)
-))
+  DESCRIPTOR = _ENTRY,
+  __module__ = 'dirinfo_pb2'
+  # @@protoc_insertion_point(class_scope:dfs.Entry)
+  ))
 _sym_db.RegisterMessage(Entry)
 
 DirInfo = _reflection.GeneratedProtocolMessageType('DirInfo', (_message.Message,), dict(
 
-    ContentEntry=_reflection.GeneratedProtocolMessageType('ContentEntry', (_message.Message,), dict(
-        DESCRIPTOR=_DIRINFO_CONTENTENTRY,
-        __module__='dirinfo_pb2'
-        # @@protoc_insertion_point(class_scope:dfs.DirInfo.ContentEntry)
+  ContentEntry = _reflection.GeneratedProtocolMessageType('ContentEntry', (_message.Message,), dict(
+    DESCRIPTOR = _DIRINFO_CONTENTENTRY,
+    __module__ = 'dirinfo_pb2'
+    # @@protoc_insertion_point(class_scope:dfs.DirInfo.ContentEntry)
     ))
-    ,
-    DESCRIPTOR=_DIRINFO,
-    __module__='dirinfo_pb2'
-    # @@protoc_insertion_point(class_scope:dfs.DirInfo)
-))
+  ,
+  DESCRIPTOR = _DIRINFO,
+  __module__ = 'dirinfo_pb2'
+  # @@protoc_insertion_point(class_scope:dfs.DirInfo)
+  ))
 _sym_db.RegisterMessage(DirInfo)
 _sym_db.RegisterMessage(DirInfo.ContentEntry)
+
 
 _DIRINFO_CONTENTENTRY.has_options = True
 _DIRINFO_CONTENTENTRY._options = _descriptor._ParseOptions(descriptor_pb2.MessageOptions(), _b('8\001'))
