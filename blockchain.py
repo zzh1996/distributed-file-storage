@@ -33,3 +33,20 @@ class blockchain(api_pb2.BetaBlockChainServicer):
         :return:(id, hashes)
         """
         return
+
+def serve():
+    import time, os
+    server = api_pb2.beta_create_BlockChain_server(blockchain)
+    port = os.getenv('PORT') or 8080
+    server.add_insecure_port('[::]:{}'.format(port))
+    server.start()
+    _ONE_DAY_IN_SECONDS = 60 * 60 * 24
+    try:
+        while 1:
+            time.sleep(_ONE_DAY_IN_SECONDS)
+    except KeyboardInterrupt:
+        server.stop(0)
+
+if __name__ == '__main__':
+    serve()
+
