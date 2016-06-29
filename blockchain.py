@@ -1,6 +1,9 @@
-import dfs_bc_pb2
-import api_pb2
+import sys
+sys.path.append('protos')
+import dfs_bc_pb2, api_pb2
 import gpg_wrapper
+from grpc.beta import implementations
+
 class blockchain(api_pb2.BetaBlockChainServicer):
     def __init__(self, db, PK):
         """
