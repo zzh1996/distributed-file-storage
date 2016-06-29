@@ -13,6 +13,7 @@ VPath.bind_to_db(db)
 """得到根目录的VPath对象"""
 vp = VPath.get_root()
 
+
 def walk_dir(vp):
     """
     用来遍历整个文件系统
@@ -34,6 +35,7 @@ def print_buf_pool(vp):
         print('dirinfo: ' + str(vp.buf_pool[i].dirinfo))
         print('has_rm: ' + str(vp.buf_pool[i].has_rm))
 
+
 def update_progress_bar(progress, interval=0.5, prefix='', suffix='', bar_len=60):
     """
     返回字符串，是进度条，定长
@@ -49,19 +51,20 @@ def update_progress_bar(progress, interval=0.5, prefix='', suffix='', bar_len=60
     """
     time.sleep(interval)
     while progress.uploaded_file_num < progress.upload_file_num:
-        percents = 100.0*(float(progress.uploaded_file_num)/progress.upload_file_num)
-        filled_len = int(round(bar_len*percents/100.0))
+        percents = 100.0 * (float(progress.uploaded_file_num) / progress.upload_file_num)
+        filled_len = int(round(bar_len * percents / 100.0))
         bar = "#" * filled_len + "-" * (bar_len - filled_len)
         sys.stdout.write("file  : {0} [{1}] {2:6.2f}% {3}\r".format(prefix, bar, percents, suffix))
         time.sleep(interval)
     while progress.uploaded_index_num < progress.upload_index_num:
-        percents = 100.0*(float(progress.uploaded_index_num)/progress.upload_index_num)
-        filled_len = int(round(bar_len*percents/100.0))
+        percents = 100.0 * (float(progress.uploaded_index_num) / progress.upload_index_num)
+        filled_len = int(round(bar_len * percents / 100.0))
         bar = "#" * filled_len + "-" * (bar_len - filled_len)
         sys.stdout.write("index : {0} [{1}] {2:6.2f}% {3}\r".format(prefix, bar, percents, suffix))
         time.sleep(interval)
     bar = "#" * bar_len
     sys.stdout.write("done  : {0} [{1}] {2:6.2f}% {3}\n".format(prefix, bar, 100.0, suffix))
+
 
 walk_dir(vp)
 """添加的是一个集合，集合元素是Path"""

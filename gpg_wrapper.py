@@ -5,6 +5,7 @@ import os
 import re
 import pprint
 
+
 class gpg_key(object):
     def __init__(self, homedir):
         self.homedir = homedir.rstrip('/')
@@ -12,7 +13,7 @@ class gpg_key(object):
             keyring = 'pubring.kbx'
         else:
             keyring = 'pubring.gpg'
-        self.gpg = gnupg.GPG(homedir= homedir, keyring=keyring)
+        self.gpg = gnupg.GPG(homedir=homedir, keyring=keyring)
 
     def generate_key(self, input_data):
         """
@@ -50,7 +51,6 @@ class gpg_key(object):
             emails.append(re.search(r'<(.*@.*)>', item['uids'][0]).group(1))
         return emails
 
-
     def list_public_keys(self):
         pprint.pprint(self.gpg.list_keys())
 
@@ -83,8 +83,8 @@ class gpg_object(object):
             keyring = 'pubring.kbx'
         else:
             keyring = 'pubring.gpg'
-        self.gpg = gnupg.GPG(homedir= homedir, keyring=keyring)
-        self.fingerprint= self.import_keyid_fingerprint()
+        self.gpg = gnupg.GPG(homedir=homedir, keyring=keyring)
+        self.fingerprint = self.import_keyid_fingerprint()
 
     def import_keyid_fingerprint(self):
         """
@@ -115,12 +115,12 @@ class gpg_object(object):
         encrypted_data = self.gpg.encrypt(
             message,
             self.fingerprint,
-            encrypt= False,
-            passphrase = passphrase,
-            symmetric = True
+            encrypt=False,
+            passphrase=passphrase,
+            symmetric=True
         )
-        assert encrypted_data.ok== True
-        assert str(encrypted_data)!= message
+        assert encrypted_data.ok == True
+        assert str(encrypted_data) != message
         assert not str(encrypted_data).isspace()
         return encrypted_data.data
 
@@ -152,7 +152,7 @@ class gpg_object(object):
         :param bytes message:
         :return:  bytes decrypted_data
         """
-        decrypted_data = self.gpg.decrypt(message, passphrase = self.key_passphrase)
+        decrypted_data = self.gpg.decrypt(message, passphrase=self.key_passphrase)
         assert not str(decrypted_data).isspace()
         return decrypted_data.data
 
@@ -163,13 +163,13 @@ class gpg_object(object):
         :param digest_algo: the algorithem used to digest
         :return: bytes signature
         """
-        signature= self.gpg.sign(
+        signature = self.gpg.sign(
             message,
-            default_key= self.fingerprint,
-            passphrase= self.key_passphrase,
-            digest_algo= digest_algo,
-            clearsign= False,
-            detach= True
+            default_key=self.fingerprint,
+            passphrase=self.key_passphrase,
+            digest_algo=digest_algo,
+            clearsign=False,
+            detach=True
         )
         assert signature
         return signature.data
@@ -183,13 +183,14 @@ class gpg_object(object):
         """
         message_io = io.BytesIO(message)
         tmp = tempfile.mkstemp()
-        fp = open(tmp[1],'wb')
+        fp = open(tmp[1], 'wb')
         fp.write(signature)
         fp.close()
-        verify= self.gpg.verify_file(message_io, tmp[1])
+        verify = self.gpg.verify_file(message_io, tmp[1])
         os.close(tmp[0])
         os.remove(tmp[1])
-        return(verify.valid)
+        return (verify.valid)
+
 
 def blockchain_encrypt(roothash, homedir, email_address, passphrase):
     """
@@ -202,8 +203,8 @@ def blockchain_encrypt(roothash, homedir, email_address, passphrase):
     """
     gpg = gpg_object(homedir, email_address, passphrase)
     passphrase = gnupg._util._make_random_string(32)
-    #generate a symmetric encrypt towards passphrase
-    sym_encrypted_data= gpg.encrypt_sym_message(roothash, passphrase)
+    # generate a symmetric encrypt towards passphrase
+    sym_encrypted_data = gpg.encrypt_sym_message(roothash, passphrase)
     # generate a assymmetric encrypt on passphrase
-    assym_encrypted_passphrase= gpg.encrypt_assym_message(passphrase)
-    return (gpg.fingerprint, sym_encrypted_data , assym_encrypted_passphrase)
+    assym_encrypted_passphrase = gpg.encrypt_assym_message(passphrase)
+    return (gpg.fingerprint, sym_encrypted_data, assym_encrypted_passphrase)

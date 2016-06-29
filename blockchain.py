@@ -1,6 +1,7 @@
 from __future__ import division
 
 import sys
+
 sys.path.append('protos')
 import dfs_bc_pb2, api_pb2
 import gpg_wrapper
@@ -11,10 +12,12 @@ from concurrent.futures import ThreadPoolExecutor
 from math import ceil
 from functools import reduce
 
+
 class blockchain(api_pb2.BetaBlockChainServicer):
     db_lock = Lock()
     java_forward_host = 'localhost'
     java_forward_port = 5002
+
     def __init__(self, db, gpg_object):
         """
 
@@ -38,6 +41,7 @@ class blockchain(api_pb2.BetaBlockChainServicer):
 
         :return: bytes request_inquiry
         """
+
         def _cmp(x, y):
             if not x:
                 return False
@@ -68,7 +72,7 @@ class blockchain(api_pb2.BetaBlockChainServicer):
                 start = 0
                 l = ceil(max_len / len(q))
                 for res in q:
-                    executor.submit(self.send_sync_req, res.id, res.hashes[start:start+l])
+                    executor.submit(self.send_sync_req, res.id, res.hashes[start:start + l])
                     start += l
             executor.shutdown(wait=True)
 

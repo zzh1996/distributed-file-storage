@@ -12,7 +12,6 @@ import functools
 
 @functools.total_ordering
 class VPath(object):
-
     db = None
     buf_pool = {}  # type: dict [VPath,mem_buf_record]
     upload_file_dict = {}
@@ -306,7 +305,7 @@ class VPath(object):
                     entry.hash = str(new_path).encode()
                     entry.size = 0
                     entry.time = 0
-                    sub_dir = self/new_path.name
+                    sub_dir = self / new_path.name
                     buf_record.new_entry.add(new_path.name)
                     self.buf_pool[sub_dir] = mem_buf_record()
                     self.metadata_lock.release()
@@ -320,7 +319,7 @@ class VPath(object):
             buf_record = cls.buf_pool[dir_vpath]
             for new_item in buf_record.new_entry:
                 if buf_record.dirinfo.content[new_item].type == dirinfo_pb2.Entry.DIR:
-                    cls.recursive_delete_new_dir(dir_vpath/new_item)
+                    cls.recursive_delete_new_dir(dir_vpath / new_item)
             del cls.buf_pool[dir_vpath]
 
     def rm(self):
@@ -363,7 +362,7 @@ class VPath(object):
             for child in self.iterdir():
                 child.download(localpath)
         elif self.is_file():
-            self.dbg("downloading file {} to {}".format(str(self), localpath+os.sep+self.name))
+            self.dbg("downloading file {} to {}".format(str(self), localpath + os.sep + self.name))
             request = api_pb2.FS_Request(type=api_pb2.FILE_DOWNLOAD, payload=[self.hash, localpath.encode()])
             response = self.stub.FSServe(request, self._TIMEOUT)
             if response.result == api_pb2.OK:
@@ -487,7 +486,6 @@ class VPath(object):
 
 
 class mem_buf_record(object):
-
     def __init__(self, vpath=None):
         """
 
