@@ -14,14 +14,16 @@ from google.protobuf import descriptor_pb2
 _sym_db = _symbol_database.Default()
 
 
+import dfs_bc_pb2 as dfs__bc__pb2
 
 
 DESCRIPTOR = _descriptor.FileDescriptor(
   name='api.proto',
   package='center',
   syntax='proto3',
-  serialized_pb=_b('\n\tapi.proto\x12\x06\x63\x65nter\"9\n\nFS_Request\x12\x1a\n\x04type\x18\x01 \x01(\x0e\x32\x0c.center.Type\x12\x0f\n\x07payload\x18\x02 \x03(\x0c\"Z\n\x0b\x46S_Response\x12\x1a\n\x04type\x18\x01 \x01(\x0e\x32\x0c.center.Type\x12\x1e\n\x06result\x18\x02 \x01(\x0e\x32\x0e.center.Result\x12\x0f\n\x07payload\x18\x03 \x03(\x0c\"=\n\x0frequest_inquiry\x12\x0e\n\x06height\x18\x01 \x01(\x05\x12\x1a\n\x12\x63urrent_block_hash\x18\x02 \x01(\x0c\">\n\x0frespond_inquiry\x12\n\n\x02id\x18\x01 \x01(\t\x12\x0f\n\x07\x66orking\x18\x02 \x01(\x08\x12\x0e\n\x06hashes\x18\x03 \x03(\x0c\")\n\x0brequest_syn\x12\n\n\x02id\x18\x01 \x01(\t\x12\x0e\n\x06hashes\x18\x02 \x03(\x0c\"+\n\x0cresponse_syn\x12\x0c\n\x04hash\x18\x01 \x01(\x0c\x12\r\n\x05\x62lock\x18\x02 \x01(\x0c*P\n\x04Type\x12\x11\n\rFILE_DOWNLOAD\x10\x00\x12\x12\n\x0eINDEX_DOWNLOAD\x10\x01\x12\x0f\n\x0b\x46ILE_UPLOAD\x10\x02\x12\x10\n\x0cINDEX_UPLOAD\x10\x03*-\n\x06Result\x12\x06\n\x02OK\x10\x00\x12\x10\n\x0c\x46\x41ST_FORWARD\x10\x01\x12\t\n\x05\x45RROR\x10\x02\x32\xa1\x01\n\nBlockChain\x12M\n\x17receive_request_inquiry\x12\x17.center.request_inquiry\x1a\x17.center.respond_inquiry\"\x00\x12\x44\n\x13receive_request_syn\x12\x13.center.request_syn\x1a\x14.center.response_syn\"\x00\x30\x01\x32\xa4\x01\n\x0bJavaForward\x12O\n\x17request_inquiry_forward\x12\x17.center.request_inquiry\x1a\x17.center.respond_inquiry\"\x00\x30\x01\x12\x44\n\x13request_syn_forward\x12\x13.center.request_syn\x1a\x14.center.response_syn\"\x00\x30\x01\x32\x41\n\tFSService\x12\x34\n\x07\x46SServe\x12\x12.center.FS_Request\x1a\x13.center.FS_Response\"\x00\x42\x1f\n\x12\x63n.edu.ustc.centerB\tApiProtosb\x06proto3')
-)
+  serialized_pb=_b('\n\tapi.proto\x12\x06\x63\x65nter\x1a\x0c\x64\x66s_bc.proto\"9\n\nFS_Request\x12\x1a\n\x04type\x18\x01 \x01(\x0e\x32\x0c.center.Type\x12\x0f\n\x07payload\x18\x02 \x03(\x0c\"Z\n\x0b\x46S_Response\x12\x1a\n\x04type\x18\x01 \x01(\x0e\x32\x0c.center.Type\x12\x1e\n\x06result\x18\x02 \x01(\x0e\x32\x0e.center.Result\x12\x0f\n\x07payload\x18\x03 \x03(\x0c\"=\n\x0frequest_inquiry\x12\x0e\n\x06height\x18\x01 \x01(\x05\x12\x1a\n\x12\x63urrent_block_hash\x18\x02 \x01(\x0c\"?\n\x10response_inquiry\x12\n\n\x02id\x18\x01 \x01(\t\x12\x0f\n\x07\x66orking\x18\x02 \x01(\x08\x12\x0e\n\x06hashes\x18\x03 \x03(\x0c\")\n\x0brequest_syn\x12\n\n\x02id\x18\x01 \x01(\t\x12\x0e\n\x06hashes\x18\x02 \x03(\x0c\"3\n\x0cresponse_syn\x12\x0c\n\x04hash\x18\x01 \x01(\x0c\x12\x15\n\x05\x62lock\x18\x02 \x01(\x0b\x32\x06.Block\"%\n\x0crequest_push\x12\x15\n\x05\x62lock\x18\x01 \x01(\x0b\x32\x06.Block\",\n\rresponse_push\x12\n\n\x02id\x18\x01 \x01(\x05\x12\x0f\n\x07\x63onfirm\x18\x02 \x01(\x08*P\n\x04Type\x12\x11\n\rFILE_DOWNLOAD\x10\x00\x12\x12\n\x0eINDEX_DOWNLOAD\x10\x01\x12\x0f\n\x0b\x46ILE_UPLOAD\x10\x02\x12\x10\n\x0cINDEX_UPLOAD\x10\x03*-\n\x06Result\x12\x06\n\x02OK\x10\x00\x12\x10\n\x0c\x46\x41ST_FORWARD\x10\x01\x12\t\n\x05\x45RROR\x10\x02\x32\xe9\x01\n\nBlockChain\x12N\n\x17receive_request_inquiry\x12\x17.center.request_inquiry\x1a\x18.center.response_inquiry\"\x00\x12\x44\n\x13receive_request_syn\x12\x13.center.request_syn\x1a\x14.center.response_syn\"\x00\x30\x01\x12\x45\n\x14receive_request_push\x12\x14.center.request_push\x1a\x15.center.response_push\"\x00\x32\xee\x01\n\x0bJavaForward\x12P\n\x17request_inquiry_forward\x12\x17.center.request_inquiry\x1a\x18.center.response_inquiry\"\x00\x30\x01\x12\x44\n\x13request_syn_forward\x12\x13.center.request_syn\x1a\x14.center.response_syn\"\x00\x30\x01\x12G\n\x14request_push_forward\x12\x14.center.request_push\x1a\x15.center.response_push\"\x00\x30\x01\x32\x41\n\tFSService\x12\x34\n\x07\x46SServe\x12\x12.center.FS_Request\x1a\x13.center.FS_Response\"\x00\x42\x1f\n\x12\x63n.edu.ustc.centerB\tApiProtosb\x06proto3')
+  ,
+  dependencies=[dfs__bc__pb2.DESCRIPTOR,])
 _sym_db.RegisterFileDescriptor(DESCRIPTOR)
 
 _TYPE = _descriptor.EnumDescriptor(
@@ -49,8 +51,8 @@ _TYPE = _descriptor.EnumDescriptor(
   ],
   containing_type=None,
   options=None,
-  serialized_start=387,
-  serialized_end=467,
+  serialized_start=495,
+  serialized_end=575,
 )
 _sym_db.RegisterEnumDescriptor(_TYPE)
 
@@ -76,8 +78,8 @@ _RESULT = _descriptor.EnumDescriptor(
   ],
   containing_type=None,
   options=None,
-  serialized_start=469,
-  serialized_end=514,
+  serialized_start=577,
+  serialized_end=622,
 )
 _sym_db.RegisterEnumDescriptor(_RESULT)
 
@@ -125,8 +127,8 @@ _FS_REQUEST = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=21,
-  serialized_end=78,
+  serialized_start=35,
+  serialized_end=92,
 )
 
 
@@ -170,8 +172,8 @@ _FS_RESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=80,
-  serialized_end=170,
+  serialized_start=94,
+  serialized_end=184,
 )
 
 
@@ -208,34 +210,34 @@ _REQUEST_INQUIRY = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=172,
-  serialized_end=233,
+  serialized_start=186,
+  serialized_end=247,
 )
 
 
-_RESPOND_INQUIRY = _descriptor.Descriptor(
-  name='respond_inquiry',
-  full_name='center.respond_inquiry',
+_RESPONSE_INQUIRY = _descriptor.Descriptor(
+  name='response_inquiry',
+  full_name='center.response_inquiry',
   filename=None,
   file=DESCRIPTOR,
   containing_type=None,
   fields=[
     _descriptor.FieldDescriptor(
-      name='id', full_name='center.respond_inquiry.id', index=0,
+      name='id', full_name='center.response_inquiry.id', index=0,
       number=1, type=9, cpp_type=9, label=1,
       has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       options=None),
     _descriptor.FieldDescriptor(
-      name='forking', full_name='center.respond_inquiry.forking', index=1,
+      name='forking', full_name='center.response_inquiry.forking', index=1,
       number=2, type=8, cpp_type=7, label=1,
       has_default_value=False, default_value=False,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       options=None),
     _descriptor.FieldDescriptor(
-      name='hashes', full_name='center.respond_inquiry.hashes', index=2,
+      name='hashes', full_name='center.response_inquiry.hashes', index=2,
       number=3, type=12, cpp_type=9, label=3,
       has_default_value=False, default_value=[],
       message_type=None, enum_type=None, containing_type=None,
@@ -253,8 +255,8 @@ _RESPOND_INQUIRY = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=235,
-  serialized_end=297,
+  serialized_start=249,
+  serialized_end=312,
 )
 
 
@@ -291,8 +293,8 @@ _REQUEST_SYN = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=299,
-  serialized_end=340,
+  serialized_start=314,
+  serialized_end=355,
 )
 
 
@@ -312,8 +314,8 @@ _RESPONSE_SYN = _descriptor.Descriptor(
       options=None),
     _descriptor.FieldDescriptor(
       name='block', full_name='center.response_syn.block', index=1,
-      number=2, type=12, cpp_type=9, label=1,
-      has_default_value=False, default_value=_b(""),
+      number=2, type=11, cpp_type=10, label=1,
+      has_default_value=False, default_value=None,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       options=None),
@@ -329,19 +331,92 @@ _RESPONSE_SYN = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=342,
-  serialized_end=385,
+  serialized_start=357,
+  serialized_end=408,
+)
+
+
+_REQUEST_PUSH = _descriptor.Descriptor(
+  name='request_push',
+  full_name='center.request_push',
+  filename=None,
+  file=DESCRIPTOR,
+  containing_type=None,
+  fields=[
+    _descriptor.FieldDescriptor(
+      name='block', full_name='center.request_push.block', index=0,
+      number=1, type=11, cpp_type=10, label=1,
+      has_default_value=False, default_value=None,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      options=None),
+  ],
+  extensions=[
+  ],
+  nested_types=[],
+  enum_types=[
+  ],
+  options=None,
+  is_extendable=False,
+  syntax='proto3',
+  extension_ranges=[],
+  oneofs=[
+  ],
+  serialized_start=410,
+  serialized_end=447,
+)
+
+
+_RESPONSE_PUSH = _descriptor.Descriptor(
+  name='response_push',
+  full_name='center.response_push',
+  filename=None,
+  file=DESCRIPTOR,
+  containing_type=None,
+  fields=[
+    _descriptor.FieldDescriptor(
+      name='id', full_name='center.response_push.id', index=0,
+      number=1, type=5, cpp_type=1, label=1,
+      has_default_value=False, default_value=0,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      options=None),
+    _descriptor.FieldDescriptor(
+      name='confirm', full_name='center.response_push.confirm', index=1,
+      number=2, type=8, cpp_type=7, label=1,
+      has_default_value=False, default_value=False,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      options=None),
+  ],
+  extensions=[
+  ],
+  nested_types=[],
+  enum_types=[
+  ],
+  options=None,
+  is_extendable=False,
+  syntax='proto3',
+  extension_ranges=[],
+  oneofs=[
+  ],
+  serialized_start=449,
+  serialized_end=493,
 )
 
 _FS_REQUEST.fields_by_name['type'].enum_type = _TYPE
 _FS_RESPONSE.fields_by_name['type'].enum_type = _TYPE
 _FS_RESPONSE.fields_by_name['result'].enum_type = _RESULT
+_RESPONSE_SYN.fields_by_name['block'].message_type = dfs__bc__pb2._BLOCK
+_REQUEST_PUSH.fields_by_name['block'].message_type = dfs__bc__pb2._BLOCK
 DESCRIPTOR.message_types_by_name['FS_Request'] = _FS_REQUEST
 DESCRIPTOR.message_types_by_name['FS_Response'] = _FS_RESPONSE
 DESCRIPTOR.message_types_by_name['request_inquiry'] = _REQUEST_INQUIRY
-DESCRIPTOR.message_types_by_name['respond_inquiry'] = _RESPOND_INQUIRY
+DESCRIPTOR.message_types_by_name['response_inquiry'] = _RESPONSE_INQUIRY
 DESCRIPTOR.message_types_by_name['request_syn'] = _REQUEST_SYN
 DESCRIPTOR.message_types_by_name['response_syn'] = _RESPONSE_SYN
+DESCRIPTOR.message_types_by_name['request_push'] = _REQUEST_PUSH
+DESCRIPTOR.message_types_by_name['response_push'] = _RESPONSE_PUSH
 DESCRIPTOR.enum_types_by_name['Type'] = _TYPE
 DESCRIPTOR.enum_types_by_name['Result'] = _RESULT
 
@@ -366,12 +441,12 @@ request_inquiry = _reflection.GeneratedProtocolMessageType('request_inquiry', (_
   ))
 _sym_db.RegisterMessage(request_inquiry)
 
-respond_inquiry = _reflection.GeneratedProtocolMessageType('respond_inquiry', (_message.Message,), dict(
-  DESCRIPTOR = _RESPOND_INQUIRY,
+response_inquiry = _reflection.GeneratedProtocolMessageType('response_inquiry', (_message.Message,), dict(
+  DESCRIPTOR = _RESPONSE_INQUIRY,
   __module__ = 'api_pb2'
-  # @@protoc_insertion_point(class_scope:center.respond_inquiry)
+  # @@protoc_insertion_point(class_scope:center.response_inquiry)
   ))
-_sym_db.RegisterMessage(respond_inquiry)
+_sym_db.RegisterMessage(response_inquiry)
 
 request_syn = _reflection.GeneratedProtocolMessageType('request_syn', (_message.Message,), dict(
   DESCRIPTOR = _REQUEST_SYN,
@@ -386,6 +461,20 @@ response_syn = _reflection.GeneratedProtocolMessageType('response_syn', (_messag
   # @@protoc_insertion_point(class_scope:center.response_syn)
   ))
 _sym_db.RegisterMessage(response_syn)
+
+request_push = _reflection.GeneratedProtocolMessageType('request_push', (_message.Message,), dict(
+  DESCRIPTOR = _REQUEST_PUSH,
+  __module__ = 'api_pb2'
+  # @@protoc_insertion_point(class_scope:center.request_push)
+  ))
+_sym_db.RegisterMessage(request_push)
+
+response_push = _reflection.GeneratedProtocolMessageType('response_push', (_message.Message,), dict(
+  DESCRIPTOR = _RESPONSE_PUSH,
+  __module__ = 'api_pb2'
+  # @@protoc_insertion_point(class_scope:center.response_push)
+  ))
+_sym_db.RegisterMessage(response_push)
 
 
 DESCRIPTOR.has_options = True
@@ -415,12 +504,17 @@ class BlockChainStub(object):
     self.receive_request_inquiry = channel.unary_unary(
         '/center.BlockChain/receive_request_inquiry',
         request_serializer=request_inquiry.SerializeToString,
-        response_deserializer=respond_inquiry.FromString,
+        response_deserializer=response_inquiry.FromString,
         )
     self.receive_request_syn = channel.unary_stream(
         '/center.BlockChain/receive_request_syn',
         request_serializer=request_syn.SerializeToString,
         response_deserializer=response_syn.FromString,
+        )
+    self.receive_request_push = channel.unary_unary(
+        '/center.BlockChain/receive_request_push',
+        request_serializer=request_push.SerializeToString,
+        response_deserializer=response_push.FromString,
         )
 
 
@@ -443,18 +537,28 @@ class BlockChainServicer(object):
     context.set_details('Method not implemented!')
     raise NotImplementedError('Method not implemented!')
 
+  def receive_request_push(self, request, context):
+    context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+    context.set_details('Method not implemented!')
+    raise NotImplementedError('Method not implemented!')
+
 
 def add_BlockChainServicer_to_server(servicer, server):
   rpc_method_handlers = {
       'receive_request_inquiry': grpc.unary_unary_rpc_method_handler(
           servicer.receive_request_inquiry,
           request_deserializer=request_inquiry.FromString,
-          response_serializer=respond_inquiry.SerializeToString,
+          response_serializer=response_inquiry.SerializeToString,
       ),
       'receive_request_syn': grpc.unary_stream_rpc_method_handler(
           servicer.receive_request_syn,
           request_deserializer=request_syn.FromString,
           response_serializer=response_syn.SerializeToString,
+      ),
+      'receive_request_push': grpc.unary_unary_rpc_method_handler(
+          servicer.receive_request_push,
+          request_deserializer=request_push.FromString,
+          response_serializer=response_push.SerializeToString,
       ),
   }
   generic_handler = grpc.method_handlers_generic_handler(
@@ -474,6 +578,8 @@ class BetaBlockChainServicer(object):
     context.code(beta_interfaces.StatusCode.UNIMPLEMENTED)
   def receive_request_syn(self, request, context):
     context.code(beta_interfaces.StatusCode.UNIMPLEMENTED)
+  def receive_request_push(self, request, context):
+    context.code(beta_interfaces.StatusCode.UNIMPLEMENTED)
 
 
 class BetaBlockChainStub(object):
@@ -489,19 +595,25 @@ class BetaBlockChainStub(object):
   receive_request_inquiry.future = None
   def receive_request_syn(self, request, timeout, metadata=None, with_call=False, protocol_options=None):
     raise NotImplementedError()
+  def receive_request_push(self, request, timeout, metadata=None, with_call=False, protocol_options=None):
+    raise NotImplementedError()
+  receive_request_push.future = None
 
 
 def beta_create_BlockChain_server(servicer, pool=None, pool_size=None, default_timeout=None, maximum_timeout=None):
   request_deserializers = {
     ('center.BlockChain', 'receive_request_inquiry'): request_inquiry.FromString,
+    ('center.BlockChain', 'receive_request_push'): request_push.FromString,
     ('center.BlockChain', 'receive_request_syn'): request_syn.FromString,
   }
   response_serializers = {
-    ('center.BlockChain', 'receive_request_inquiry'): respond_inquiry.SerializeToString,
+    ('center.BlockChain', 'receive_request_inquiry'): response_inquiry.SerializeToString,
+    ('center.BlockChain', 'receive_request_push'): response_push.SerializeToString,
     ('center.BlockChain', 'receive_request_syn'): response_syn.SerializeToString,
   }
   method_implementations = {
     ('center.BlockChain', 'receive_request_inquiry'): face_utilities.unary_unary_inline(servicer.receive_request_inquiry),
+    ('center.BlockChain', 'receive_request_push'): face_utilities.unary_unary_inline(servicer.receive_request_push),
     ('center.BlockChain', 'receive_request_syn'): face_utilities.unary_stream_inline(servicer.receive_request_syn),
   }
   server_options = beta_implementations.server_options(request_deserializers=request_deserializers, response_serializers=response_serializers, thread_pool=pool, thread_pool_size=pool_size, default_timeout=default_timeout, maximum_timeout=maximum_timeout)
@@ -511,14 +623,17 @@ def beta_create_BlockChain_server(servicer, pool=None, pool_size=None, default_t
 def beta_create_BlockChain_stub(channel, host=None, metadata_transformer=None, pool=None, pool_size=None):
   request_serializers = {
     ('center.BlockChain', 'receive_request_inquiry'): request_inquiry.SerializeToString,
+    ('center.BlockChain', 'receive_request_push'): request_push.SerializeToString,
     ('center.BlockChain', 'receive_request_syn'): request_syn.SerializeToString,
   }
   response_deserializers = {
-    ('center.BlockChain', 'receive_request_inquiry'): respond_inquiry.FromString,
+    ('center.BlockChain', 'receive_request_inquiry'): response_inquiry.FromString,
+    ('center.BlockChain', 'receive_request_push'): response_push.FromString,
     ('center.BlockChain', 'receive_request_syn'): response_syn.FromString,
   }
   cardinalities = {
     'receive_request_inquiry': cardinality.Cardinality.UNARY_UNARY,
+    'receive_request_push': cardinality.Cardinality.UNARY_UNARY,
     'receive_request_syn': cardinality.Cardinality.UNARY_STREAM,
   }
   stub_options = beta_implementations.stub_options(host=host, metadata_transformer=metadata_transformer, request_serializers=request_serializers, response_deserializers=response_deserializers, thread_pool=pool, thread_pool_size=pool_size)
@@ -536,12 +651,17 @@ class JavaForwardStub(object):
     self.request_inquiry_forward = channel.unary_stream(
         '/center.JavaForward/request_inquiry_forward',
         request_serializer=request_inquiry.SerializeToString,
-        response_deserializer=respond_inquiry.FromString,
+        response_deserializer=response_inquiry.FromString,
         )
     self.request_syn_forward = channel.unary_stream(
         '/center.JavaForward/request_syn_forward',
         request_serializer=request_syn.SerializeToString,
         response_deserializer=response_syn.FromString,
+        )
+    self.request_push_forward = channel.unary_stream(
+        '/center.JavaForward/request_push_forward',
+        request_serializer=request_push.SerializeToString,
+        response_deserializer=response_push.FromString,
         )
 
 
@@ -557,18 +677,28 @@ class JavaForwardServicer(object):
     context.set_details('Method not implemented!')
     raise NotImplementedError('Method not implemented!')
 
+  def request_push_forward(self, request, context):
+    context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+    context.set_details('Method not implemented!')
+    raise NotImplementedError('Method not implemented!')
+
 
 def add_JavaForwardServicer_to_server(servicer, server):
   rpc_method_handlers = {
       'request_inquiry_forward': grpc.unary_stream_rpc_method_handler(
           servicer.request_inquiry_forward,
           request_deserializer=request_inquiry.FromString,
-          response_serializer=respond_inquiry.SerializeToString,
+          response_serializer=response_inquiry.SerializeToString,
       ),
       'request_syn_forward': grpc.unary_stream_rpc_method_handler(
           servicer.request_syn_forward,
           request_deserializer=request_syn.FromString,
           response_serializer=response_syn.SerializeToString,
+      ),
+      'request_push_forward': grpc.unary_stream_rpc_method_handler(
+          servicer.request_push_forward,
+          request_deserializer=request_push.FromString,
+          response_serializer=response_push.SerializeToString,
       ),
   }
   generic_handler = grpc.method_handlers_generic_handler(
@@ -581,6 +711,8 @@ class BetaJavaForwardServicer(object):
     context.code(beta_interfaces.StatusCode.UNIMPLEMENTED)
   def request_syn_forward(self, request, context):
     context.code(beta_interfaces.StatusCode.UNIMPLEMENTED)
+  def request_push_forward(self, request, context):
+    context.code(beta_interfaces.StatusCode.UNIMPLEMENTED)
 
 
 class BetaJavaForwardStub(object):
@@ -588,19 +720,24 @@ class BetaJavaForwardStub(object):
     raise NotImplementedError()
   def request_syn_forward(self, request, timeout, metadata=None, with_call=False, protocol_options=None):
     raise NotImplementedError()
+  def request_push_forward(self, request, timeout, metadata=None, with_call=False, protocol_options=None):
+    raise NotImplementedError()
 
 
 def beta_create_JavaForward_server(servicer, pool=None, pool_size=None, default_timeout=None, maximum_timeout=None):
   request_deserializers = {
     ('center.JavaForward', 'request_inquiry_forward'): request_inquiry.FromString,
+    ('center.JavaForward', 'request_push_forward'): request_push.FromString,
     ('center.JavaForward', 'request_syn_forward'): request_syn.FromString,
   }
   response_serializers = {
-    ('center.JavaForward', 'request_inquiry_forward'): respond_inquiry.SerializeToString,
+    ('center.JavaForward', 'request_inquiry_forward'): response_inquiry.SerializeToString,
+    ('center.JavaForward', 'request_push_forward'): response_push.SerializeToString,
     ('center.JavaForward', 'request_syn_forward'): response_syn.SerializeToString,
   }
   method_implementations = {
     ('center.JavaForward', 'request_inquiry_forward'): face_utilities.unary_stream_inline(servicer.request_inquiry_forward),
+    ('center.JavaForward', 'request_push_forward'): face_utilities.unary_stream_inline(servicer.request_push_forward),
     ('center.JavaForward', 'request_syn_forward'): face_utilities.unary_stream_inline(servicer.request_syn_forward),
   }
   server_options = beta_implementations.server_options(request_deserializers=request_deserializers, response_serializers=response_serializers, thread_pool=pool, thread_pool_size=pool_size, default_timeout=default_timeout, maximum_timeout=maximum_timeout)
@@ -610,14 +747,17 @@ def beta_create_JavaForward_server(servicer, pool=None, pool_size=None, default_
 def beta_create_JavaForward_stub(channel, host=None, metadata_transformer=None, pool=None, pool_size=None):
   request_serializers = {
     ('center.JavaForward', 'request_inquiry_forward'): request_inquiry.SerializeToString,
+    ('center.JavaForward', 'request_push_forward'): request_push.SerializeToString,
     ('center.JavaForward', 'request_syn_forward'): request_syn.SerializeToString,
   }
   response_deserializers = {
-    ('center.JavaForward', 'request_inquiry_forward'): respond_inquiry.FromString,
+    ('center.JavaForward', 'request_inquiry_forward'): response_inquiry.FromString,
+    ('center.JavaForward', 'request_push_forward'): response_push.FromString,
     ('center.JavaForward', 'request_syn_forward'): response_syn.FromString,
   }
   cardinalities = {
     'request_inquiry_forward': cardinality.Cardinality.UNARY_STREAM,
+    'request_push_forward': cardinality.Cardinality.UNARY_STREAM,
     'request_syn_forward': cardinality.Cardinality.UNARY_STREAM,
   }
   stub_options = beta_implementations.stub_options(host=host, metadata_transformer=metadata_transformer, request_serializers=request_serializers, response_deserializers=response_deserializers, thread_pool=pool, thread_pool_size=pool_size)
