@@ -1,8 +1,11 @@
 from protos import dirinfo_pb2
+from grpc.beta import implementations
+from protos import api_pb2
 from pathlib import Path
 import hashlib
 import os
 import time
+import sys
 from threading import Lock
 import functools
 
@@ -20,6 +23,14 @@ class VPath(object):
     uploaded_index_num = 0
     uploading_index_name = ''
     metadata_lock = Lock()
+    host = 'localhost'
+    port = 5000
+    channel = implementations.insecure_channel(host, port)
+    stub = api_pb2.beta_create_FSService_stub(channel)
+    _TIMEOUT = 1
+    _INDEX_DOWNLOAD_RETRY = 3
+    _INDEX_UPLOAD_RETRY = 3
+    """:type : api_pb2.BetaFSServiceStub"""
 
     def __init__(self, path_stack):
         """
@@ -112,7 +123,8 @@ class VPath(object):
         """
         vp = self
         for s in pathstrs:
-            if s == '': continue
+            if s == '':
+                continue
             parts = Path(s).parts
             if parts[0] == '/':
                 vp = VPath.get_root()
@@ -185,8 +197,23 @@ class VPath(object):
         dir_hash = dir_entry.hash
         dirinfo = dirinfo_pb2.DirInfo()
         if len(dir_hash) > 0:
-            dirinfo.ParseFromString(self.db[dir_hash])
-        return dirinfo
+            if dir_hash not in self.db:
+                retry = self._INDEX_DOWNLOAD_RETRY
+                request = api_pb2.FS_Request(type=api_pb2.INDEX_DOWNLOAD, payload=[dir_hash])
+                while retry > 0:
+                    respond = self.stub.FSServe(request, self._TIMEOUT)
+                    if respond.result == api_pb2.OK:
+                        self.db[dir_hash] = respond.payload[0]
+                        dirinfo.ParseFromString(respond.payload[0])
+                        return dirinfo
+                    else:
+                        retry -= 1
+                        self.dbg("Index Download Failed {}".format(respond.payload))
+            else:
+                dirinfo.ParseFromString(self.db[dir_hash])
+                return dirinfo
+        else:
+            return dirinfo_pb2.DirInfo()
 
     def iterdir(self):
         if not self.is_dir():
@@ -235,6 +262,13 @@ class VPath(object):
     def reset_diff(cls):
         cls.metadata_lock.acquire()
         cls.buf_pool.clear()
+        cls.upload_file_dict.clear()
+        cls.upload_file_num = 0
+        cls.uploaded_file_num = 0
+        cls.uploading_file_name = ''
+        cls.upload_index_num = 0
+        cls.uploaded_index_num = 0
+        cls.uploading_index_name = ''
         cls.metadata_lock.release()
 
     def add(self, new_path_set):
@@ -323,13 +357,21 @@ class VPath(object):
         """
         下载此文件/夹到一个本地目录(localpath)
         :param str localpath:
-        :return:
+        :return: bool True if download success else return false
         """
         if self.is_dir():
             for child in self.iterdir():
                 child.download(localpath)
         elif self.is_file():
-            print("download file {} to {}".format(str(self), localpath+os.sep+self.name))
+            self.dbg("downloading file {} to {}".format(str(self), localpath+os.sep+self.name))
+            request = api_pb2.FS_Request(type=api_pb2.FILE_DOWNLOAD, payload=[self.hash, localpath.encode()])
+            response = self.stub.FSServe(request, self._TIMEOUT)
+            if response.result == api_pb2.OK:
+                self.dbg("File {} download complete".format(str(self)))
+                return True
+            else:
+                self.dbg("Download Failed {}".format(response.payload))
+                return False
 
     @classmethod
     def get_file_info(cls):
@@ -338,17 +380,28 @@ class VPath(object):
         need to use XuQiang's API to upload and get file identifier(such as hash)
         :return: None
         """
-        for new_file in cls.upload_file_dict:
+        """
+        don't need lock because this function only invoked by VPath.commit and it will acquire a lock
+        """
+        for new_file in list(cls.upload_file_dict.keys()):
             p = Path(new_file)
             entry = cls.upload_file_dict[new_file]
             stat = p.stat()
             entry.time = int(stat.st_mtime)
             entry.size = stat.st_size
-            """here, may change hash source someday"""
-            entry.hash = cls.get_path_hash(p)
-            cls.uploaded_file_num += 1
+
             cls.uploading_file_name = new_file
-            time.sleep(0.01)
+            cls.dbg("uploading file {}".format(new_file))
+            request = api_pb2.FS_Request(type=api_pb2.FILE_UPLOAD, payload=[new_file.encode()])
+            respond = cls.stub.FSServe(request, cls._TIMEOUT)
+            """:type : api_pb2.FS_Response"""
+            if respond.result == api_pb2.OK:
+                assert respond.payload
+                entry.hash = respond.payload[0]
+                cls.uploaded_file_num += 1
+            else:
+                cls.dbg("upload file {} failed".format(new_file))
+                del cls.upload_file_dict[new_file]
 
     @classmethod
     def send_hash(cls, key, value):
@@ -358,9 +411,17 @@ class VPath(object):
         :param bytes value:  the Dirinfo
         :return:
         """
-        cls.uploaded_index_num += 1
-        time.sleep(0.2)
-        """need use XuQiang's API to upload hash"""
+        retry = cls._INDEX_UPLOAD_RETRY
+        request = api_pb2.FS_Request(type=api_pb2.INDEX_UPLOAD, payload=[key, value])
+        while retry > 0:
+            respond = cls.stub.FSServe(request, cls._TIMEOUT)
+            if respond.result == api_pb2.OK:
+                cls.uploaded_index_num += 1
+                return
+            else:
+                retry -= 1
+                cls.dbg("Index Upload Failed {}".format(respond.payload))
+        raise RuntimeError("upload index failed")
 
     @classmethod
     def commit(cls):
@@ -407,14 +468,18 @@ class VPath(object):
                     cls.buf_pool[dir_vpath.parent].new_entry.remove(dir_vpath.name)
             serialized = buf_record.dirinfo.SerializeToString()
             cls.uploading_index_name = str(dir_vpath)
+            cls.dbg("uploading index {}".format(cls.uploading_index_name))
             cls.send_hash(dir_hash, serialized)
             cls.db[dir_hash] = serialized
 
-        cls.buf_pool.clear()
-        cls.upload_file_dict.clear()
         cls.metadata_lock.release()
+        cls.reset_diff()
 
-        #cls.db.sync()
+        # cls.db.sync()
+
+    @classmethod
+    def dbg(cls, msg):
+        print("[{}] VPath: {}".format(time.ctime(), msg), file=sys.stderr)
 
     @classmethod
     def clean_up(cls):
