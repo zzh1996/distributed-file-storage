@@ -1,4 +1,8 @@
 syntax="proto3";
+package center;
+
+option java_package = "cn.edu.ustc.center";
+option java_outer_classname = "DFSBC";
 
 message Block{
 	message BlockStruct{

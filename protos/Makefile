@@ -12,7 +12,7 @@ api: api.proto
 	${PROTOC} --plugin=protoc-gen-grpc-java=${JAVA_PLUGIN} --grpc-java_out=. --java_out=. api.proto
 	${PROTOC} --plugin=protoc-gen-grpc=${PY_PLUGIN} --python_out=. --grpc_out=. api.proto
 dfs_bc: dfs_bc.proto
-	${PROTOC} --python_out=. dfs_bc.proto
+	${PROTOC} --python_out=. --java_out=. dfs_bc.proto
 
 dirinfo: dirinfo.proto
 	${PROTOC} --python_out=. dirinfo.proto
