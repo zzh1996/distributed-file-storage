@@ -15,6 +15,9 @@ import atexit
 import datetime
 import gpg_wrapper
 import gpgconfig
+import subprocess
+
+subprocess.Popen(["bash", "-c", "java -cp build/classes:config:lib/* cn.edu.ustc.center.Center"], cwd='../REOpenChord')
 
 app = Flask(__name__)
 app.config['BOOTSTRAP_SERVE_LOCAL'] = True
@@ -221,6 +224,7 @@ def index():
 def cleanup():
     # db.sync()
     db.close()
+    VPath.clean_up()
     print('clean up finished')
 
 
