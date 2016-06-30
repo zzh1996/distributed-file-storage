@@ -1,6 +1,12 @@
 #!/usr/bin/python3 -O
 # -*- coding: utf-8 -*-
 
+import subprocess
+import time
+
+subprocess.Popen(["bash", "-c", "java -cp build/classes:config:lib/* cn.edu.ustc.center.Center"], cwd='../REOpenChord')
+time.sleep(5)
+
 from flask import Flask, render_template, request, abort
 from flask_bootstrap import Bootstrap
 
@@ -15,9 +21,6 @@ import atexit
 import datetime
 import gpg_wrapper
 import gpgconfig
-import subprocess
-
-subprocess.Popen(["bash", "-c", "java -cp build/classes:config:lib/* cn.edu.ustc.center.Center"], cwd='../REOpenChord')
 
 app = Flask(__name__)
 app.config['BOOTSTRAP_SERVE_LOCAL'] = True
