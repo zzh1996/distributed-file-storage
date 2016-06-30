@@ -23,6 +23,22 @@ function showErr(e) {
   $('.container').prepend(msg)
 }
 
+function showInfo(e) {
+  var msg = '\
+  <div class="alert alert-info">\
+    <a href="#" class="close" data-dismiss="alert" aria-label="close">&times;</a>\
+      <strong>Info: </strong> ' + e +
+  '</div>'
+  $('.container').prepend(msg)
+}
+
+function showResult(s){
+    if(s.indexOf('succeeded')>-1)
+        showInfo(s);
+    else
+        showErr(s);
+}
+
 function getlocal(f) {
   $.get('/list', {
     local_path: f
@@ -67,6 +83,7 @@ function download(evt) {
       localpath: localRoot,
     })
     .done(function(data) {
+      showResult(data);
       getlocal(localRoot)
       Array.prototype.slice.call($('#remote-files .active')).forEach(function(ele) {
         $(ele).toggleClass('active');
@@ -97,6 +114,7 @@ function upload(evt) {
       remotepath: remotepath
     })
     .done(function(data) {
+      showResult(data);
       getremote(remotepath);
       Array.prototype.slice.call($('#local-files .active')).forEach(function(ele) {
         $(ele).toggleClass('active');
@@ -237,6 +255,7 @@ function deleteFiles(evt) {
         remotepath: remotepath
       })
       .done(function(data) {
+        showResult(data);
         getremote(remotepath);
       })
       .fail(function() {
