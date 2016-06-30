@@ -49,7 +49,7 @@ def sizeof_fmt(num, suffix='B'):
 
 def time_fmt(timestamp):
     if timestamp == 0:
-        return 'Not synchronized'
+        return 'None'
     else:
         return datetime.datetime.fromtimestamp(timestamp).strftime('%Y-%m-%d %H:%M:%S')
 
