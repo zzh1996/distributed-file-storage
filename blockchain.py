@@ -7,6 +7,7 @@ import hashlib
 import threading
 import time
 from concurrent.futures import ThreadPoolExecutor
+from collections import Counter
 from math import ceil
 from functools import reduce
 
@@ -161,7 +162,12 @@ class blockchain(api_pb2.BetaBlockChainServicer):
         :param dfs_bc_pb2.Block block:
         :return: bool if push is accepted
         """
-        return True
+        req_push = api_pb2.request_push(block=block)
+        res_push = self.stub.request_push_forward(req_push)
+        return Counter([res.result for res in res_push])
+
+    def receive_request_push(self, request, context):
+        return self.generate_block_confirm(request.block)
 
     def generate_block_confirm(self, new_block):
         """
@@ -199,8 +205,7 @@ class blockchain(api_pb2.BetaBlockChainServicer):
         req = api_pb2.request_syn()
         req.id = id
         req.hashes = hashes
-        # ch = implementations.insecure_channel(self.java_forward_host, self.java_forward_port)
-        # stub = api_pb2.beta_create_JavaForward_stub(ch)
+        """todo: deal with response"""
         return self.stub.request_syn_forward(req)
 
     def receive_request_syn(self, req, context):
