@@ -358,12 +358,15 @@ class VPath(object):
         :param str localpath:
         :return: bool True if download success else return false
         """
+        dest = localpath + os.sep + self.name
         if self.is_dir():
+            if not os.path.exists(dest):
+                os.mkdir(dest)
             for child in self.iterdir():
-                child.download(localpath)
+                child.download(dest)
         elif self.is_file():
-            self.dbg("downloading file {} to {}".format(str(self), localpath + os.sep + self.name))
-            request = api_pb2.FS_Request(type=api_pb2.FILE_DOWNLOAD, payload=[self.hash, localpath.encode()])
+            self.dbg("downloading file {} to {}".format(str(self), dest))
+            request = api_pb2.FS_Request(type=api_pb2.FILE_DOWNLOAD, payload=[self.hash, dest.encode()])
             response = self.stub.FSServe(request, self._TIMEOUT)
             if response.result == api_pb2.OK:
                 self.dbg("File {} download complete".format(str(self)))
@@ -482,7 +485,8 @@ class VPath(object):
 
     @classmethod
     def clean_up(cls):
-        cls.db.close()
+        request = api_pb2.FS_Request(type=api_pb2.EXIT)
+        cls.stub.FSServe(request, cls._TIMEOUT)
 
 
 class mem_buf_record(object):
