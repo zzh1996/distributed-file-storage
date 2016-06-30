@@ -104,12 +104,17 @@ class blockchain(api_pb2.BetaBlockChainServicer):
                     # prevent parent block is None
                     assert self.db[block.parent]
                     block.ParseFromString(self.db[block.parent])
-                return api_pb2.response_inquiry(id='', result=api_pb2.response_inquiry.SEND, hashes=hashes)
+                return api_pb2.response_inquiry(result=api_pb2.response_inquiry.SEND, hashes=hashes)
             else:
                 self.dbg("re_highest_block in db && re_height > self.height : Impossible!!!")
-                return api_pb2.response_inquiry(id='', result=api_pb2.response_inquiry.CONFUSE)
+                return api_pb2.response_inquiry(result=api_pb2.response_inquiry.CONFUSE)
 
     def commit_block_local(self, block):
+        """
+
+        :param Block block:
+        :return:
+        """
         self.db_lock.acquire()
         self.current_block_hash = self.get_hash(block)
         self.db[self.current_block_hash] = block
@@ -142,7 +147,7 @@ class blockchain(api_pb2.BetaBlockChainServicer):
             block.struct.SerializeToString()
         )
         self.db_lock.acquire()
-        self.commit_block_local(block)
+        #self.commit_block_local(block)
         # propel block to other node
         self.propel_block(block)
         # wait for confirm of the new block
@@ -157,6 +162,37 @@ class blockchain(api_pb2.BetaBlockChainServicer):
         :return: bool if push is accepted
         """
         return True
+
+    def generate_block_confirm(self, new_block):
+        """
+        generate the block confirm
+        :param Block new_block:
+        :return: response_push
+        """
+        block = dfs_bc_pb2.Block()
+        block.ParseFromString(new_block)
+        response_push = api_pb2.response_push()
+        if not self.gpg_object.verify_signature(
+            block.struct.SerializeToString(), block.signature
+        ):
+            response_push.result = api_pb2.response_push.SIGFAULT
+        else:
+            if block.struct.height <= self.height:
+                response_push.result = api_pb2.response_push.NEEDSYN
+            elif block.struct.height > self.height + 1:
+                response_push.result = api_pb2.response_push.NOTHING
+            elif block.struct.height == self.height + 1:
+                if block.struct.parent not in self.db:
+                    response_push.result = api_pb2.response_push.NOTHING
+                elif block.struct.parent != self.current_block_hash:
+                    self.dbg("re_highest_block in db && re_height > self.height : Impossible!!!")
+                    response_push.result = api_pb2.response_push.NOTHING
+                else:
+                    response_push.result = api_pb2.response_push.CONFIRM
+                    self.db_lock.acquire()
+                    self.commit_block_local(block)
+                    self.db_lock.release()
+        return response_push
 
     def send_sync_req(self, id, hashes):
 
@@ -178,43 +214,6 @@ class blockchain(api_pb2.BetaBlockChainServicer):
     def receive_block_confirm(self, response_push):
         response_push = api_pb2.response_push()
         return response_push.confirm
-
-    def generate_block_confirm(self, new_block):
-        """
-        generate the block confirm
-        :param Block new_block:
-        :return: block_confirm
-        """
-        block = dfs_bc_pb2.Block()
-        block.ParseFromString(new_block)
-        block_confirm = api_pb2.response_push()
-        if block.struct.height <= self.height:
-            block_confirm.confirm = False
-        elif block.struct.height == self.height + 1:
-            # verify signature
-            if not self.gpg_object.verify_signature(
-                    block.struct.SerializeToString(), block.signature
-            ):
-                block_confirm.confirm = False
-            elif block.struct.parent != self.current_block_hash:
-                return b''
-            else:
-                # return block_confirm, and update local blockchain
-                block_confirm.confirm = True
-                self.db_lock.acquire()
-                self.commit_block_local(block)
-                self.db_lock.release()
-        else:
-            # the block's parent is not in my local db
-            if not self.gpg_object.verify_signature(
-                    block.struct.SerializeToString(), block.signature
-            ):
-                block_confirm.confirm = False
-            else:
-                # put the wild legal block into buffer
-                self.buffer[self.get_hash(block)] = block
-                # self.send_request_inquiry()
-        return block_confirm
 
     @classmethod
     def dbg(cls, msg):

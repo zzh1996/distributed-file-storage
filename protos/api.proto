@@ -71,6 +71,7 @@ message response_push{
 		CONFIRM = 0;
 		NOTHING = 1;
 		NEEDSYN = 2;
+		SIGFAULT = 3;
 	}
 	string id = 1;
 	ResType result = 2;
