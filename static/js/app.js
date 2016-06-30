@@ -29,7 +29,7 @@ function showInfo(e) {
     <a href="#" class="close" data-dismiss="alert" aria-label="close">&times;</a>\
       <strong>Info: </strong> ' + e +
   '</div>'
-  $('.container').prepend(msg)
+  //$('.container').prepend(msg)
 }
 
 function showResult(s){

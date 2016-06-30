@@ -5,7 +5,7 @@ import subprocess
 import time
 
 subprocess.Popen(["bash", "-c", "java -cp build/classes:config:lib/* cn.edu.ustc.center.Center"], cwd='../REOpenChord')
-time.sleep(5)
+time.sleep(3)
 
 from flask import Flask, render_template, request, abort
 from flask_bootstrap import Bootstrap
