@@ -358,6 +358,7 @@ class VPath(object):
         :param str localpath:
         :return: bool True if download success else return false
         """
+        localpath.rstrip(os.sep)
         dest = localpath + os.sep + self.name
         if self.is_dir():
             if not os.path.exists(dest):
@@ -372,8 +373,8 @@ class VPath(object):
                 self.dbg("File {} download complete".format(str(self)))
                 return True
             else:
-                self.dbg("Download Failed {}".format(response.payload))
-                return False
+                self.dbg("Download {} Failed {}".format(str(self), response.payload))
+                raise RuntimeError("Download {} Failed {}".format(str(self), response.payload))
 
     @classmethod
     def get_file_info(cls):
@@ -486,7 +487,10 @@ class VPath(object):
     @classmethod
     def clean_up(cls):
         request = api_pb2.FS_Request(type=api_pb2.EXIT)
-        cls.stub.FSServe(request, cls._TIMEOUT)
+        try:
+            cls.stub.FSServe(request, cls._TIMEOUT)
+        except:
+            pass
 
 
 class mem_buf_record(object):
