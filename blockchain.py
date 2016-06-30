@@ -27,7 +27,7 @@ class blockchain(api_pb2.BetaBlockChainServicer):
         """
         self.db = db
         self.gpg_object = gpg_object
-        self.height = db[b'height']
+        self.height = self.get_height(db[b'height'])
         self.PK = gpg_object.fingerprint
         self.current_block_hash = db[b'current_block_hash']
 
@@ -36,6 +36,16 @@ class blockchain(api_pb2.BetaBlockChainServicer):
         h = hashlib.sha256()
         h.update(block.SerializeToString())
         return h.digest()
+
+    @classmethod
+    def get_height(cls, height_byte):
+        height = int.from_bytes(height_byte, byteorder= 'big')
+        return height
+
+    @classmethod
+    def set_height(cls, height):
+        height_byte = height.to_bytes(8, byteorder= 'big')
+        return height_byte
 
     def send_request_inquiry(self):
         """
@@ -121,7 +131,7 @@ class blockchain(api_pb2.BetaBlockChainServicer):
         self.db[self.current_block_hash] = block
         self.db[b'current_block_hash'] = self.current_block_hash
         self.height += 1
-        self.db[b'height'] = self.height
+        self.db[b'height'] = self.set_height(self.height)
 
     def generate_block(self, root_hash, payload_hash=b''):
         """
@@ -160,6 +170,31 @@ class blockchain(api_pb2.BetaBlockChainServicer):
             self.commit_block_local(block)
         self.db_lock.release()
 
+    def generate_block_test(self, root_hash, payload_hash=b''):
+        """
+
+        :param bytes root_hash:
+        :param bytes payload_hash:
+        :return:
+        """
+        block = dfs_bc_pb2.Block()
+        block.struct.PK = self.PK.encode()
+        block.struct.parent = self.current_block_hash
+        block.struct.height = self.height + 1
+        block.struct.payload_hash = payload_hash
+        fingerprint, enc_root_hash, passphrase = \
+            gpg_wrapper.blockchain_encrypt(
+                root_hash,
+                self.gpg_object.homedir,
+                self.gpg_object.email_address,
+                self.gpg_object.key_passphrase
+            )
+        block.struct.root_hash = enc_root_hash
+        block.struct.sym_key = passphrase
+        block.signature = self.gpg_object.sign_message(
+            block.struct.SerializeToString()
+        )
+        return block
 
     def propel_block(self, block):
         """
