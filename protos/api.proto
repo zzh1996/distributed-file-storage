@@ -42,8 +42,13 @@ message request_inquiry{
 }
 
 message response_inquiry{
+	enum ResType {
+		SEND = 0;
+		FORK = 1;
+		CONFUSE = 2;
+	}
 	string id = 1;
-	bool forking = 2;
+	ResType result = 2;
 	repeated bytes hashes = 3;
 }
 
@@ -62,8 +67,13 @@ message request_push{
 }
 
 message response_push{
+	enum ResType{
+		CONFIRM = 0;
+		NOTHING = 1;
+		NEEDSYN = 2;
+	}
 	string id = 1;
-	bool confirm = 2;
+	ResType result = 2;
 }
 
 /*

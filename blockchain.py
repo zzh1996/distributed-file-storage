@@ -1,23 +1,23 @@
 from __future__ import division
-
 import sys
-
-sys.path.append('protos')
-import dfs_bc_pb2, api_pb2
+from protos import dfs_bc_pb2, api_pb2
 import gpg_wrapper
 from grpc.beta import implementations
 import hashlib
-from threading import Lock
+import threading
+import time
 from concurrent.futures import ThreadPoolExecutor
 from math import ceil
 from functools import reduce
 
 
 class blockchain(api_pb2.BetaBlockChainServicer):
-    db_lock = Lock()
+    db_lock = threading.Lock()
     java_forward_host = 'localhost'
     java_forward_port = 5002
-
+    buffer = dict()
+    ch = implementations.insecure_channel(java_forward_host, java_forward_port)
+    stub = api_pb2.beta_create_JavaForward_stub(ch)
     def __init__(self, db, gpg_object):
         """
 
@@ -63,7 +63,7 @@ class blockchain(api_pb2.BetaBlockChainServicer):
         if len(q) == 1:
             equal = True
         else:
-            equal = reduce(q, _cmp)
+            equal = reduce(_cmp, q)
         with ThreadPoolExecutor(max_workers=4) as executor:
             if not equal:
                 executor.submit(self.send_sync_req, q[0].id, q[0].hashes)
@@ -85,31 +85,36 @@ class blockchain(api_pb2.BetaBlockChainServicer):
         :param context:
         :return: respond_inquiry. If hashes are not None, the newer block-hash has smaller index
         """
-        respond_inquiry = api_pb2.response_inquiry()
         re_height = request_inquiry.height
         re_current_block_hash = request_inquiry.current_block_hash
-        if re_height < self.height and re_current_block_hash not in self.db:
-            respond_inquiry.forking = True
-        elif re_height > self.height and re_current_block_hash not in self.db:
-            respond_inquiry.forking = False
-            self.send_request_inquiry()
-        elif re_height < self.height and re_current_block_hash in self.db:
-            block = dfs_bc_pb2.Block()
-            block.ParseFromString(self.db[self.current_block_hash])
-            while re_current_block_hash != block.parent:
-                respond_inquiry.hashes.append(block.parent)
-                # prevent parent block is None
-                assert self.db[block.parent]
-                block = self.db[block.parent]
-            respond_inquiry.forking = False
-        return respond_inquiry
+        if re_current_block_hash not in self.db:
+            if re_height <= self.height:
+                return api_pb2.response_inquiry(id='', result=api_pb2.response_inquiry.FORK)
+            else:
+                confused=threading.Thread(target=self.send_request_inquiry(),name='ConfusedInquiry')
+                confused.start()
+                return api_pb2.response_inquiry(id='', result=api_pb2.response_inquiry.CONFUSE)
+        else:
+            if re_height <= self.height:
+                hashes = list()
+                block = dfs_bc_pb2.Block()
+                block.ParseFromString(self.db[self.current_block_hash])
+                while re_current_block_hash != block.parent:
+                    hashes.append(block.parent)
+                    # prevent parent block is None
+                    assert self.db[block.parent]
+                    block.ParseFromString(self.db[block.parent])
+                return api_pb2.response_inquiry(id='', result=api_pb2.response_inquiry.SEND, hashes=hashes)
+            else:
+                self.dbg("re_highest_block in db && re_height > self.height : Impossible!!!")
+                return api_pb2.response_inquiry(id='', result=api_pb2.response_inquiry.CONFUSE)
 
     def commit_block_local(self, block):
         self.db_lock.acquire()
         self.current_block_hash = self.get_hash(block)
         self.db[self.current_block_hash] = block
         self.db[b'current_block_hash'] = self.current_block_hash
-        self.height = self.height + 1
+        self.height += 1
         self.db[b'height'] = self.height
 
     def generate_block(self, root_hash, payload_hash=b''):
@@ -158,9 +163,9 @@ class blockchain(api_pb2.BetaBlockChainServicer):
         req = api_pb2.request_syn()
         req.id = id
         req.hashes = hashes
-        ch = implementations.insecure_channel(self.java_forward_host, self.java_forward_port)
-        stub = api_pb2.beta_create_JavaForward_stub(ch)
-        return stub.request_syn_forward(req)
+        # ch = implementations.insecure_channel(self.java_forward_host, self.java_forward_port)
+        # stub = api_pb2.beta_create_JavaForward_stub(ch)
+        return self.stub.request_syn_forward(req)
 
     def receive_request_syn(self, req, context):
 
@@ -169,6 +174,51 @@ class blockchain(api_pb2.BetaBlockChainServicer):
             res.hash = h
             res.block = self.db[h].SerializeToString()
             yield res
+
+    def receive_block_confirm(self, response_push):
+        response_push = api_pb2.response_push()
+        return response_push.confirm
+
+    def generate_block_confirm(self, new_block):
+        """
+        generate the block confirm
+        :param Block new_block:
+        :return: block_confirm
+        """
+        block = dfs_bc_pb2.Block()
+        block.ParseFromString(new_block)
+        block_confirm = api_pb2.response_push()
+        if block.struct.height <= self.height:
+            block_confirm.confirm = False
+        elif block.struct.height == self.height + 1:
+            # verify signature
+            if not self.gpg_object.verify_signature(
+                    block.struct.SerializeToString(), block.signature
+            ):
+                block_confirm.confirm = False
+            elif block.struct.parent != self.current_block_hash:
+                return b''
+            else:
+                # return block_confirm, and update local blockchain
+                block_confirm.confirm = True
+                self.db_lock.acquire()
+                self.commit_block_local(block)
+                self.db_lock.release()
+        else:
+            # the block's parent is not in my local db
+            if not self.gpg_object.verify_signature(
+                    block.struct.SerializeToString(), block.signature
+            ):
+                block_confirm.confirm = False
+            else:
+                # put the wild legal block into buffer
+                self.buffer[self.get_hash(block)] = block
+                # self.send_request_inquiry()
+        return block_confirm
+
+    @classmethod
+    def dbg(cls, msg):
+        print("[{}] BlockChain: {}".format(time.ctime(), msg), file=sys.stderr)
 
 
 def serve(db, gpg_object):

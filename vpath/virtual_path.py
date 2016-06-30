@@ -26,7 +26,7 @@ class VPath(object):
     port = 5000
     channel = implementations.insecure_channel(host, port)
     stub = api_pb2.beta_create_FSService_stub(channel)
-    _TIMEOUT = 1
+    _TIMEOUT = 99
     _INDEX_DOWNLOAD_RETRY = 3
     _INDEX_UPLOAD_RETRY = 3
     """:type : api_pb2.BetaFSServiceStub"""

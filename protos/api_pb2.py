@@ -21,7 +21,7 @@ DESCRIPTOR = _descriptor.FileDescriptor(
   name='api.proto',
   package='center',
   syntax='proto3',
-  serialized_pb=_b('\n\tapi.proto\x12\x06\x63\x65nter\x1a\x0c\x64\x66s_bc.proto\"9\n\nFS_Request\x12\x1a\n\x04type\x18\x01 \x01(\x0e\x32\x0c.center.Type\x12\x0f\n\x07payload\x18\x02 \x03(\x0c\"Z\n\x0b\x46S_Response\x12\x1a\n\x04type\x18\x01 \x01(\x0e\x32\x0c.center.Type\x12\x1e\n\x06result\x18\x02 \x01(\x0e\x32\x0e.center.Result\x12\x0f\n\x07payload\x18\x03 \x03(\x0c\"=\n\x0frequest_inquiry\x12\x0e\n\x06height\x18\x01 \x01(\x05\x12\x1a\n\x12\x63urrent_block_hash\x18\x02 \x01(\x0c\"?\n\x10response_inquiry\x12\n\n\x02id\x18\x01 \x01(\t\x12\x0f\n\x07\x66orking\x18\x02 \x01(\x08\x12\x0e\n\x06hashes\x18\x03 \x03(\x0c\")\n\x0brequest_syn\x12\n\n\x02id\x18\x01 \x01(\t\x12\x0e\n\x06hashes\x18\x02 \x03(\x0c\":\n\x0cresponse_syn\x12\x0c\n\x04hash\x18\x01 \x01(\x0c\x12\x1c\n\x05\x62lock\x18\x02 \x01(\x0b\x32\r.center.Block\",\n\x0crequest_push\x12\x1c\n\x05\x62lock\x18\x01 \x01(\x0b\x32\r.center.Block\",\n\rresponse_push\x12\n\n\x02id\x18\x01 \x01(\t\x12\x0f\n\x07\x63onfirm\x18\x02 \x01(\x08*Z\n\x04Type\x12\x11\n\rFILE_DOWNLOAD\x10\x00\x12\x12\n\x0eINDEX_DOWNLOAD\x10\x01\x12\x0f\n\x0b\x46ILE_UPLOAD\x10\x02\x12\x10\n\x0cINDEX_UPLOAD\x10\x03\x12\x08\n\x04\x45XIT\x10\x04*-\n\x06Result\x12\x06\n\x02OK\x10\x00\x12\x10\n\x0c\x46\x41ST_FORWARD\x10\x01\x12\t\n\x05\x45RROR\x10\x02\x32\xe9\x01\n\nBlockChain\x12N\n\x17receive_request_inquiry\x12\x17.center.request_inquiry\x1a\x18.center.response_inquiry\"\x00\x12\x44\n\x13receive_request_syn\x12\x13.center.request_syn\x1a\x14.center.response_syn\"\x00\x30\x01\x12\x45\n\x14receive_request_push\x12\x14.center.request_push\x1a\x15.center.response_push\"\x00\x32\xee\x01\n\x0bJavaForward\x12P\n\x17request_inquiry_forward\x12\x17.center.request_inquiry\x1a\x18.center.response_inquiry\"\x00\x30\x01\x12\x44\n\x13request_syn_forward\x12\x13.center.request_syn\x1a\x14.center.response_syn\"\x00\x30\x01\x12G\n\x14request_push_forward\x12\x14.center.request_push\x1a\x15.center.response_push\"\x00\x30\x01\x32\x41\n\tFSService\x12\x34\n\x07\x46SServe\x12\x12.center.FS_Request\x1a\x13.center.FS_Response\"\x00\x42\x1f\n\x12\x63n.edu.ustc.centerB\tApiProtosb\x06proto3')
+  serialized_pb=_b('\n\tapi.proto\x12\x06\x63\x65nter\x1a\x0c\x64\x66s_bc.proto\"9\n\nFS_Request\x12\x1a\n\x04type\x18\x01 \x01(\x0e\x32\x0c.center.Type\x12\x0f\n\x07payload\x18\x02 \x03(\x0c\"Z\n\x0b\x46S_Response\x12\x1a\n\x04type\x18\x01 \x01(\x0e\x32\x0c.center.Type\x12\x1e\n\x06result\x18\x02 \x01(\x0e\x32\x0e.center.Result\x12\x0f\n\x07payload\x18\x03 \x03(\x0c\"=\n\x0frequest_inquiry\x12\x0e\n\x06height\x18\x01 \x01(\x05\x12\x1a\n\x12\x63urrent_block_hash\x18\x02 \x01(\x0c\"\x8c\x01\n\x10response_inquiry\x12\n\n\x02id\x18\x01 \x01(\t\x12\x30\n\x06result\x18\x02 \x01(\x0e\x32 .center.response_inquiry.ResType\x12\x0e\n\x06hashes\x18\x03 \x03(\x0c\"*\n\x07ResType\x12\x08\n\x04SEND\x10\x00\x12\x08\n\x04\x46ORK\x10\x01\x12\x0b\n\x07\x43ONFUSE\x10\x02\")\n\x0brequest_syn\x12\n\n\x02id\x18\x01 \x01(\t\x12\x0e\n\x06hashes\x18\x02 \x03(\x0c\":\n\x0cresponse_syn\x12\x0c\n\x04hash\x18\x01 \x01(\x0c\x12\x1c\n\x05\x62lock\x18\x02 \x01(\x0b\x32\r.center.Block\",\n\x0crequest_push\x12\x1c\n\x05\x62lock\x18\x01 \x01(\x0b\x32\r.center.Block\"|\n\rresponse_push\x12\n\n\x02id\x18\x01 \x01(\t\x12-\n\x06result\x18\x02 \x01(\x0e\x32\x1d.center.response_push.ResType\"0\n\x07ResType\x12\x0b\n\x07\x43ONFIRM\x10\x00\x12\x0b\n\x07NOTHING\x10\x01\x12\x0b\n\x07NEEDSYN\x10\x02*Z\n\x04Type\x12\x11\n\rFILE_DOWNLOAD\x10\x00\x12\x12\n\x0eINDEX_DOWNLOAD\x10\x01\x12\x0f\n\x0b\x46ILE_UPLOAD\x10\x02\x12\x10\n\x0cINDEX_UPLOAD\x10\x03\x12\x08\n\x04\x45XIT\x10\x04*-\n\x06Result\x12\x06\n\x02OK\x10\x00\x12\x10\n\x0c\x46\x41ST_FORWARD\x10\x01\x12\t\n\x05\x45RROR\x10\x02\x32\xe9\x01\n\nBlockChain\x12N\n\x17receive_request_inquiry\x12\x17.center.request_inquiry\x1a\x18.center.response_inquiry\"\x00\x12\x44\n\x13receive_request_syn\x12\x13.center.request_syn\x1a\x14.center.response_syn\"\x00\x30\x01\x12\x45\n\x14receive_request_push\x12\x14.center.request_push\x1a\x15.center.response_push\"\x00\x32\xee\x01\n\x0bJavaForward\x12P\n\x17request_inquiry_forward\x12\x17.center.request_inquiry\x1a\x18.center.response_inquiry\"\x00\x30\x01\x12\x44\n\x13request_syn_forward\x12\x13.center.request_syn\x1a\x14.center.response_syn\"\x00\x30\x01\x12G\n\x14request_push_forward\x12\x14.center.request_push\x1a\x15.center.response_push\"\x00\x30\x01\x32\x41\n\tFSService\x12\x34\n\x07\x46SServe\x12\x12.center.FS_Request\x1a\x13.center.FS_Response\"\x00\x42\x1f\n\x12\x63n.edu.ustc.centerB\tApiProtosb\x06proto3')
   ,
   dependencies=[dfs__bc__pb2.DESCRIPTOR,])
 _sym_db.RegisterFileDescriptor(DESCRIPTOR)
@@ -55,8 +55,8 @@ _TYPE = _descriptor.EnumDescriptor(
   ],
   containing_type=None,
   options=None,
-  serialized_start=509,
-  serialized_end=599,
+  serialized_start=667,
+  serialized_end=757,
 )
 _sym_db.RegisterEnumDescriptor(_TYPE)
 
@@ -82,8 +82,8 @@ _RESULT = _descriptor.EnumDescriptor(
   ],
   containing_type=None,
   options=None,
-  serialized_start=601,
-  serialized_end=646,
+  serialized_start=759,
+  serialized_end=804,
 )
 _sym_db.RegisterEnumDescriptor(_RESULT)
 
@@ -97,6 +97,58 @@ OK = 0
 FAST_FORWARD = 1
 ERROR = 2
 
+
+_RESPONSE_INQUIRY_RESTYPE = _descriptor.EnumDescriptor(
+  name='ResType',
+  full_name='center.response_inquiry.ResType',
+  filename=None,
+  file=DESCRIPTOR,
+  values=[
+    _descriptor.EnumValueDescriptor(
+      name='SEND', index=0, number=0,
+      options=None,
+      type=None),
+    _descriptor.EnumValueDescriptor(
+      name='FORK', index=1, number=1,
+      options=None,
+      type=None),
+    _descriptor.EnumValueDescriptor(
+      name='CONFUSE', index=2, number=2,
+      options=None,
+      type=None),
+  ],
+  containing_type=None,
+  options=None,
+  serialized_start=348,
+  serialized_end=390,
+)
+_sym_db.RegisterEnumDescriptor(_RESPONSE_INQUIRY_RESTYPE)
+
+_RESPONSE_PUSH_RESTYPE = _descriptor.EnumDescriptor(
+  name='ResType',
+  full_name='center.response_push.ResType',
+  filename=None,
+  file=DESCRIPTOR,
+  values=[
+    _descriptor.EnumValueDescriptor(
+      name='CONFIRM', index=0, number=0,
+      options=None,
+      type=None),
+    _descriptor.EnumValueDescriptor(
+      name='NOTHING', index=1, number=1,
+      options=None,
+      type=None),
+    _descriptor.EnumValueDescriptor(
+      name='NEEDSYN', index=2, number=2,
+      options=None,
+      type=None),
+  ],
+  containing_type=None,
+  options=None,
+  serialized_start=617,
+  serialized_end=665,
+)
+_sym_db.RegisterEnumDescriptor(_RESPONSE_PUSH_RESTYPE)
 
 
 _FS_REQUEST = _descriptor.Descriptor(
@@ -235,9 +287,9 @@ _RESPONSE_INQUIRY = _descriptor.Descriptor(
       is_extension=False, extension_scope=None,
       options=None),
     _descriptor.FieldDescriptor(
-      name='forking', full_name='center.response_inquiry.forking', index=1,
-      number=2, type=8, cpp_type=7, label=1,
-      has_default_value=False, default_value=False,
+      name='result', full_name='center.response_inquiry.result', index=1,
+      number=2, type=14, cpp_type=8, label=1,
+      has_default_value=False, default_value=0,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       options=None),
@@ -253,6 +305,7 @@ _RESPONSE_INQUIRY = _descriptor.Descriptor(
   ],
   nested_types=[],
   enum_types=[
+    _RESPONSE_INQUIRY_RESTYPE,
   ],
   options=None,
   is_extendable=False,
@@ -260,8 +313,8 @@ _RESPONSE_INQUIRY = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=249,
-  serialized_end=312,
+  serialized_start=250,
+  serialized_end=390,
 )
 
 
@@ -298,8 +351,8 @@ _REQUEST_SYN = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=314,
-  serialized_end=355,
+  serialized_start=392,
+  serialized_end=433,
 )
 
 
@@ -336,8 +389,8 @@ _RESPONSE_SYN = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=357,
-  serialized_end=415,
+  serialized_start=435,
+  serialized_end=493,
 )
 
 
@@ -367,8 +420,8 @@ _REQUEST_PUSH = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=417,
-  serialized_end=461,
+  serialized_start=495,
+  serialized_end=539,
 )
 
 
@@ -387,9 +440,9 @@ _RESPONSE_PUSH = _descriptor.Descriptor(
       is_extension=False, extension_scope=None,
       options=None),
     _descriptor.FieldDescriptor(
-      name='confirm', full_name='center.response_push.confirm', index=1,
-      number=2, type=8, cpp_type=7, label=1,
-      has_default_value=False, default_value=False,
+      name='result', full_name='center.response_push.result', index=1,
+      number=2, type=14, cpp_type=8, label=1,
+      has_default_value=False, default_value=0,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       options=None),
@@ -398,6 +451,7 @@ _RESPONSE_PUSH = _descriptor.Descriptor(
   ],
   nested_types=[],
   enum_types=[
+    _RESPONSE_PUSH_RESTYPE,
   ],
   options=None,
   is_extendable=False,
@@ -405,15 +459,19 @@ _RESPONSE_PUSH = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=463,
-  serialized_end=507,
+  serialized_start=541,
+  serialized_end=665,
 )
 
 _FS_REQUEST.fields_by_name['type'].enum_type = _TYPE
 _FS_RESPONSE.fields_by_name['type'].enum_type = _TYPE
 _FS_RESPONSE.fields_by_name['result'].enum_type = _RESULT
+_RESPONSE_INQUIRY.fields_by_name['result'].enum_type = _RESPONSE_INQUIRY_RESTYPE
+_RESPONSE_INQUIRY_RESTYPE.containing_type = _RESPONSE_INQUIRY
 _RESPONSE_SYN.fields_by_name['block'].message_type = dfs__bc__pb2._BLOCK
 _REQUEST_PUSH.fields_by_name['block'].message_type = dfs__bc__pb2._BLOCK
+_RESPONSE_PUSH.fields_by_name['result'].enum_type = _RESPONSE_PUSH_RESTYPE
+_RESPONSE_PUSH_RESTYPE.containing_type = _RESPONSE_PUSH
 DESCRIPTOR.message_types_by_name['FS_Request'] = _FS_REQUEST
 DESCRIPTOR.message_types_by_name['FS_Response'] = _FS_RESPONSE
 DESCRIPTOR.message_types_by_name['request_inquiry'] = _REQUEST_INQUIRY
