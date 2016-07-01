@@ -9,6 +9,7 @@ import time
 from concurrent.futures import ThreadPoolExecutor
 from collections import Counter, defaultdict
 from math import ceil
+from random import choice
 from functools import reduce
 from random import choice
 
@@ -63,6 +64,25 @@ class blockchain(api_pb2.BetaBlockChainServicer):
 
         :return: bytes request_inquiry
         """
+        def get_map(response_list):
+            """
+
+            :param List of api_pb2.response_inquiry response_list:
+            :return: dict(id, hashes)
+            """
+            download_map = defaultdict(list)
+            if len(response_list) > 0:
+                len_sorted = sorted(response_list, key=lambda x: len(x.hashes), reverse=True)
+                chosen_res = len_sorted[0]
+                for res in len_sorted:
+                    flag = False
+                    for block_hash in res.hashes:
+                        if flag:
+                            download_map[block_hash].append(res.id)
+                        elif block_hash in chosen_res.hashes:
+                            flag = True
+            return download_map
+
         request_inquiry = api_pb2.request_inquiry()
         request_inquiry.height = self.height
         request_inquiry.current_block_hash = self.current_block_hash
@@ -70,7 +90,18 @@ class blockchain(api_pb2.BetaBlockChainServicer):
         res = self.stub.request_inquiry_forward(request_inquiry)
         if len(res) > 0:
             highest_res = max(res, key=lambda x: x.height)
-            if highest_res.result == api_pb2.response_inquiry.FORK:
+            if highest_res.result == api_pb2.response_inquiry.SEND:
+                res_SEND = [r for r in res if r.result == api_pb2.response_inquiry.SEND]
+                download_map = get_map(res_SEND)
+                while len(download_map) > 0:
+                    node_list = defaultdict(list)
+                    for block_hash, id_list in download_map.items():
+                        node_list[choice(id_list)].append(block_hash)
+                    with ThreadPoolExecutor(max_workers=4) as executor:
+                        for id, hashes in node_list.items():
+                            executor.submit(self.send_sync_req, id, hashes, download_map)
+                        executor.shutdown(wait=True)
+            elif highest_res.result == api_pb2.response_inquiry.FORK:
                 self.db_lock.acquire()
                 self.height -= 1
                 self.db[b'height'] = self.set_height(self.height)
@@ -79,21 +110,6 @@ class blockchain(api_pb2.BetaBlockChainServicer):
                 self.db[b'current_block_hash'] = self.current_block_hash
                 self.db_lock.release()
                 self.send_request_inquiry()
-            elif highest_res.result == api_pb2.response_inquiry.SEND:
-
-                with ThreadPoolExecutor(max_workers=4) as executor:
-                    if not equal:
-                        executor.submit(self.send_sync_req, q[0].id, q[0].hashes)
-                        pass
-                    else:
-                        start = 0
-                        l = ceil(max_len / len(q))
-                        for res in q:
-                            executor.submit(self.send_sync_req, res.id, res.hashes[start:start + l])
-                            start += l
-                    executor.shutdown(wait=True)
-
-        return request_inquiry
 
     def receive_request_inquiry(self, request_inquiry, context):
         """
@@ -251,12 +267,15 @@ class blockchain(api_pb2.BetaBlockChainServicer):
 
         return response_push
 
-    def send_sync_req(self, id, hashes):
+    def send_sync_req(self, id, hashes, download_map):
 
         req = api_pb2.request_syn()
         req.id = id
         req.hashes = hashes
-        return self.stub.request_syn_forward(req)
+        self.dbg("from {} download {}".format(id, hashes))
+        for res in self.stub.request_syn_forward(req):
+            self.download_buffer[res.hash] = res.block
+            del download_map[res.hash]
 
     def receive_request_syn(self, req, context):
 
@@ -269,29 +288,6 @@ class blockchain(api_pb2.BetaBlockChainServicer):
     @classmethod
     def dbg(cls, msg):
         print("[{}] BlockChain: {}".format(time.ctime(), msg), file=sys.stderr)
-
-    def get_map(self, response_list):
-        """
-
-        :param List of api_pb2.response_inquiry response_list:
-        :return: node_list
-        """
-        download_map = defaultdict(list())
-        node_list = defaultdict(list())
-        if len(response_list) > 0:
-            len_sorted = sorted(response_list, key=lambda x: len(x.hashes), reverse=True)
-            chosen_res = len_sorted[0]
-            max_len = len(chosen_res.hashes)
-            for res in len_sorted:
-                flag = False
-                for block_hash in res.hashes:
-                    if flag:
-                        download_map[block_hash].append(res.id)
-                    elif block_hash in chosen_res.hashes:
-                        flag = True
-            for block_hash in download_map:
-                node_list[choice(download_map[block_hash])].append(block_hash)
-        return node_list
 
 def serve(db, gpg_object):
     import time, os
